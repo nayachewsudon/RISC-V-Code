@@ -21,7 +21,7 @@ always @(*) begin
         end
         4'b0010: //slt
         begin 
-            rd = {31'b0, signed(a) < signed(b)};    
+            rd = {31'b0, ($signed(a) < $signed(b))};    
         end
         4'b0011: //sltu 
         begin 
@@ -51,4 +51,4 @@ always @(*) begin
     endcase
 end
 
-endmodule;
+endmodule
