@@ -2,43 +2,47 @@ module programcounter (
     input [31:0] in_pc,
     input clk_pc,
     input reset_pc,
-    output reg [31:0] out_pc,
+    output reg [31:0] out_pc
 );
-always @ (posedge clk_pc or posedge reset_pc) begin //TODO: or do we just exclude posedge reset_pc? When to include reset_pc?
+    always @ (posedge clk_pc or posedge reset_pc) begin //TODO: or do we just exclude posedge reset_pc? When to include reset_pc?
      
-    if (reset_pc) begin
-        out_pc <= 32'h00000000;//reset value
-    end
-    else begin
-        out_pc <= in_pc;
-    end
+        if (reset_pc) begin
+            out_pc <= 32'h00000000;//reset value
+        end
+        else begin
+            out_pc <= in_pc;
+        end
     
-end
-endmodule;
+    end
+endmodule
 //--------------------------------------------------------------------------------------------
 module adder ( //TODO: check if this works??
     input [31:0] pc, // TODO: how to connect the output of the pc to the input of the adder? 
     output reg [31:0] pc_plus_4
 ); 
 
-assign pc_plus_4 = 4 + pc; // does a carry bit matter in a program counter? 
+always @(*) begin
+    pc_plus_4 = 4 + pc;
+end
 
-endmodule;
+endmodule
 //--------------------------------------------------------------------------------------------
 module multiplexer (
     input [31:0] in_a, in_b,
     input sel,
-    output [31:0] out_m
+    output reg [31:0] out_m
 ); 
 
-if (s == 1) begin 
-        assign out_m = a; 
+always @(*) begin
+   if (sel) begin 
+        out_m = in_a; 
     end 
     else begin 
-        assign out_m = b;
-    end
+        out_m = in_b;
+    end 
+end
 
-endmodule; 
+endmodule
 //--------------------------------------------------------------------------------------------
 module register_file(
     input clk_r, 
@@ -67,45 +71,43 @@ always @ (posedge clk_r or posedge reset_r) begin
     end
 end
 
-endmodule; 
+endmodule
 //--------------------------------------------------------------------------------------------
-module instruction_memory #(parameter N = 32)( //reset? 
-    input [31:0] a_im, // TODO: verify that [7:2]is because instruction memory is ???? - depends on the PC+4 or PC+1
-    output reg [31:0] rd_im
+module instruction_memory #(parameter N = 32)( 
+    input [31:0] a_im, 
+    input reset_im,
+    output [31:0] rd_im
 );
 
-reg [31:0] Memory [0:N-1]; // initialize memory storage
+reg [31:0] Memory [N-1:0]; // initialize memory storage
+integer i; 
+assign rd_im = Memory[a_im];
 
-assign rd_im = Memory[a_im]; //Todo: Must be wrong
-
-//initial begin end
-//to load the memory
-
-endmodule;
+endmodule
 
 //--------------------------------------------------------------------------------------------
-module data_memory #(parameter N = 32)( //this one is still byte addressable
+module data_memory #(parameter N = 32)( 
     input [31:0] a_dm, //read instruction
     input clk_dm, reset_dm,
     input [31:0] wd_dm, //data to write
     input we,
-    output reg [31:0] rd_dm //register  
+    output [31:0] rd_dm 
 );
 
-reg [31:0] memory [N-1 : 0];
+reg [31:0] data_memory [N-1 : 0];
 integer i;
-assign rd_dm = datamemory[a_dm];
+assign rd_dm = data_memory[a_dm];
 
 always @ (posedge clk_dm) begin
     if (reset_dm) begin
         for (i = 0; i < N; i++) begin
-            datamemory[i] = 32'h00000000;
+            data_memory[i] = 32'h00000000;
         end
     end 
     if (we) begin 
-        datamemory[a_dm] = wd_dm; 
+        data_memory[a_dm] = wd_dm; 
     end
 end
 
 
-endmodule;
+endmodule
