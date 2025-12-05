@@ -4,8 +4,8 @@
 module signextender_tb();
 
     // Inputs
-    reg [31:7] A;
-    reg [1:0] sel_ext;
+    reg [24:0] A;
+    reg [2:0] sel_ext;
 
     // Output
     wire [31:0] out;
@@ -25,26 +25,35 @@ module signextender_tb();
 
     // Main test
     initial begin
-        A = 25'h000ABC;
-        sel_ext = 2'b00;
+        A = 25'h000ABC; 
+        sel_ext = 3'b000; 
         #1;
-        $display("Test lw: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
+        $display("I-type/LW: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 
-        A = 25'hFFF123;  
-        sel_ext = 2'b10;
+        A = 25'hFFF123; 
+        sel_ext = 3'b010; 
         #1;
-        $display("Test I-type (neg): A=%h sel_ext=%b => out=%h", A, sel_ext, out);
+        $display("I-type/LW (negative): A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 
-        A = 25'h0ABCD;  
-        sel_ext = 2'b01;
+        A = 25'h0ABCD; 
+        sel_ext = 3'b001; 
         #1;
-        $display("Test sw: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
+        $display("SW: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 
-        A = 25'h12345;  
-        sel_ext = 2'b11;
+        A = 25'h12345; 
+        sel_ext = 3'b011; 
         #1;
-        $display("Test R-type: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
+        $display("B-type/BEQ: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 
+        A = 25'h1ABCDE; 
+        sel_ext = 3'b100; 
+        #1;
+        $display("J-type/JAL: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
+
+        A = 25'h0FEDC; 
+        sel_ext = 3'b101; 
+        #1;
+        $display("U-type/LUI: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
         $finish;
     end
 
