@@ -42,6 +42,14 @@ always @ (*) begin
         sel_result = 1'b1;
         alu_op = 2'b10;
     end
+    default: begin
+        sel_result = 0;
+        dmem_we = 0;
+        sel_alu_src_b = 0;
+        sel_ext = 2'b00;
+        rf_we = 0;
+        alu_op = 2'b00; 
+    end
     endcase
 end
 
