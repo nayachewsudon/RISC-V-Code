@@ -132,7 +132,7 @@ wire [3:0] alu_control;
 
 controller_stagetwo controller_stagetwo(
     .funct3(rd_im_output[14:12]),
-    .funct7(rd_im_output[30]),
+    .funct7(rd_im_output[31]),
     .alu_op(alu_op),
     .alu_control(alu_control)
 );
