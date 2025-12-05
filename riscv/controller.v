@@ -80,7 +80,7 @@ always @ (*) begin
         sel_result = 2'b10;    
         branch = 0;
         sel_jump = 1;       
-        alu_op = 2'b00;
+        alu_op = 2'b11;
     end
     default: begin
         rf_we = 1'b0;
@@ -117,9 +117,9 @@ always @ (*) begin
                 alu_control = 4'b0000;
             end
             1'b1: begin
-                alu_control = 4'b1000; 
+                alu_control = 4'b1000; //this is subtraction, beq has to go here
             end
-            default: alu_control = 4'b1111; //TODO: check if this is okay
+            default: alu_control = 4'b1111; 
             endcase
         end
         3'b001: begin
@@ -154,7 +154,10 @@ always @ (*) begin
         default: alu_control = 4'b1111; //TODO
         endcase
     end
-    default: alu_control = 4'b1111; //TODO
+    2'b11: begin
+        alu_control = 4'b1000;
+    end
+    default: alu_control = 4'b1111;
     endcase
 end
 

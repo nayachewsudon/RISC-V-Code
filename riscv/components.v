@@ -4,7 +4,7 @@ module programcounter (
     input reset_pc,
     output reg [31:0] out_pc
 );
-    always @ (posedge clk_pc or posedge reset_pc) begin //TODO: or do we just exclude posedge reset_pc? When to include reset_pc?
+    always @ (posedge clk_pc or posedge reset_pc) begin 
      
         if (reset_pc) begin
             out_pc <= 32'b0;//reset value
@@ -116,12 +116,10 @@ integer i;
 
 //Initialize memory (to help testing)
 initial begin
-    for (i = 0; i< 64; i = i+1) begin
-        Memory[i] = i; 
-    end
+    $readmemh("test.hex", Memory);
 end
 
-assign rd_im = Memory[a_im];
+assign rd_im = Memory[a_im[7:2]];
 
 endmodule
 
@@ -138,7 +136,7 @@ reg [31:0] data_memory [31 : 0];
 integer i;
 assign rd_dm = data_memory[a_dm];
 
-always @ (posedge clk_dm) begin
+always @ (posedge clk_dm or posedge reset_dm) begin
     if (reset_dm) begin
         for (i = 0; i < 32; i++) begin
             data_memory[i] = 32'h00000000;

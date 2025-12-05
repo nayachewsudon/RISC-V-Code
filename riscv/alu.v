@@ -1,10 +1,10 @@
 module alu(
     input [31:0] a, b,
     input [3:0] alu_controller, 
-    output reg [31:0] rd
+    output reg [31:0] rd,
+    output zero_flag
 );
 
-//Writing only for R-Type first
 always @(*) begin
     case(alu_controller)
         4'b0000: //add
@@ -50,5 +50,8 @@ always @(*) begin
         default: rd = 32'b0;
     endcase
 end
+
+//Noww we raise the zero flag if a == b
+assign zero_flag = (rd == 32'b0);
 
 endmodule

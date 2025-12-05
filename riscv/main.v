@@ -77,8 +77,8 @@ register_file register_file (
 wire  [31:0] mux_one;
 
 multiplexer multiplexer1 (
-    .in_a(rd2_rf),
-    .in_b(se_out), 
+    .in_a(se_out),
+    .in_b(rd2_rf), 
     .sel(sel_alu_src_b),
     .out_m(mux_one)
 );
