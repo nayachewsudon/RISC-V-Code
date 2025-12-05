@@ -60,13 +60,13 @@ module mux_3to1 (
 
 always @(*) begin
     case (sel_res)
-    2'b00: begin
+    2'b00: begin //alu
         out_m = in_a;
     end
-    2'b01: begin
+    2'b01: begin //dm
         out_m = in_b;
     end
-    2'b10: begin
+    2'b10: begin //pc+4
         out_m = in_c;
     end
     default: begin

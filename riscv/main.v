@@ -10,13 +10,42 @@ module riscv(
     input reset
 );
 
+//--Adder--
+wire [31:0] adder_output;
+
+adder adder (
+    .pc(instruction_output),
+    .pc_plus_4(adder_output)
+);
+
+//--PC + imm adder--
+wire [31:0] sum; 
+adder_general adder_general(
+    .a(instruction_output),
+    .b(se_out),
+    .sum(sum)
+);
+
+//--Branch/Jump Logic--             
+wire sel_pc;               
+assign sel_pc = (branch & zero_flag) | sel_jump;
+
+//--Mux for that logic--
+wire [31:0] mux_logic;
+multiplexer multiplexer_3(
+    .in_a(sum),
+    .in_b(adder_output),
+    .sel(sel_pc),
+    .out_m(mux_logic)
+);
+
 //--PC--
 wire [31:0] instruction_output;
 
 programcounter programcounter (
     .clk_pc(clk),
     .reset_pc(reset),
-    .in_pc(adder_output),
+    .in_pc(mux_logic),
     .out_pc(instruction_output)
 );
 
@@ -26,14 +55,6 @@ wire [31:0] rd_im_output;
 instruction_memory instruction_memory (
     .a_im(instruction_output),
     .rd_im(rd_im_output)
-);
-
-//--Adder--
-wire [31:0] adder_output;
-
-adder adder (
-    .pc(instruction_output),
-    .pc_plus_4(adder_output)
 );
 
 //--Register File--
@@ -58,7 +79,7 @@ wire  [31:0] mux_one;
 multiplexer multiplexer1 (
     .in_a(rd2_rf),
     .in_b(se_out), 
-    .sel(sel<-sel_alu_src_b),
+    .sel(sel_alu_src_b),
     .out_m(mux_one)
 );
 
@@ -76,10 +97,11 @@ data_memory data_memory(
 
 //--Mux 2--
 wire [31:0] mux_two;
-multiplexer multiplexer2(
+mux_3to1 multiplexer2(
     .in_a(alu_output),
     .in_b(rd_dm),
-    .sel(sel_result),
+    .in_c(adder_output),
+    .sel_res(sel_result),
     .out_m(mux_two)
 );
 
@@ -126,16 +148,13 @@ signextender signextender(
 
 //--ALU--
 wire [31:0] alu_output;
+wire zero_flag; 
 alu alu(
     .a(rd1_rf),
     .b(mux_one),
     .alu_controller(alu_control),
-    .rd(alu_output)
+    .rd(alu_output),
+    .zero_flag(zero_flag)
 );
-
-//--Branch/Jump Logic--
-wire zero_flag;              
-wire sel_pc;               
-assign sel_pc = (branch & zero_flag) | sel_jump;
 
 endmodule
