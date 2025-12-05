@@ -48,8 +48,8 @@ end
 endmodule
 
 module controller_stagetwo(
-    input [14:12] funct3, 
-    input [30] funct7, //ngambil bit ke-6 di bagian funct7
+    input [2:0] funct3, 
+    input funct7, //ambil bit ke-6 di bagian funct7
     input [1:0] alu_op, 
     output reg [3:0] alu_control
 ); 
