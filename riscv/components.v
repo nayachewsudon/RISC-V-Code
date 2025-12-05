@@ -143,7 +143,7 @@ always @ (posedge clk_dm or posedge reset_dm) begin
         end
     end 
     if (we) begin 
-        data_memory[a_dm] = wd_dm; 
+        data_memory[a_dm [6:2]] = wd_dm; 
     end
 end
 
