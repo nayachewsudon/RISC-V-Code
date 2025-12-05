@@ -1,10 +1,12 @@
 module controller_stageone(
     input [6:0] op, 
-    output reg sel_result,
+    output reg [1:0] sel_result,
     output reg dmem_we,
     output reg sel_alu_src_b,
-    output reg [1:0] sel_ext, //TODO: bit size diganti pas tambah B, J, U, dll
+    output reg [2:0] sel_ext, 
     output reg rf_we, 
+    output reg branch, 
+    output reg sel_jump,
     output reg [1:0] alu_op
 ); 
 
@@ -12,42 +14,82 @@ always @ (*) begin
     case (op)
     7'b0000011: begin
         rf_we = 1'b1;
-        sel_ext = 2'b00;
+        sel_ext = 3'b000;
         sel_alu_src_b = 1'b1;
         dmem_we = 1'b0;
-        sel_result = 1'b0;
+        sel_result = 2'b01;
+        branch = 0;
+        sel_jump = 0;
         alu_op = 2'b00;
     end
     7'b0100011: begin
         rf_we = 1'b0;
-        sel_ext = 2'b01;
+        sel_ext = 3'b001;
         sel_alu_src_b = 1'b1;
         dmem_we = 1'b1;
-        sel_result = 1'b1;
+        sel_result = 2'b00;
+        branch = 0;
+        sel_jump = 0;
         alu_op = 2'b00;
     end
     7'b0110011: begin
         rf_we = 1'b1;
-        sel_ext = 2'b11; //TODO: termasuk dalam default
+        sel_ext = 3'b111; //default
         sel_alu_src_b = 1'b0;
         dmem_we = 1'b0;
-        sel_result = 1'b1;
+        sel_result = 2'b00;
+        branch = 0;
+        sel_jump = 0;
         alu_op = 2'b01;
     end
     7'b0010011: begin
         rf_we = 1'b1;
-        sel_ext = 2'b10;
+        sel_ext = 3'b010;
         sel_alu_src_b = 1'b1;
         dmem_we = 1'b0;
-        sel_result = 1'b1;
+        sel_result = 2'b00;
+        branch = 0;
+        sel_jump = 0;
         alu_op = 2'b10;
     end
+    7'b1100011: begin
+        rf_we = 1'b0;
+        sel_ext = 3'b011;
+        sel_alu_src_b = 1'b0;
+        dmem_we = 1'b0;
+        sel_result = 2'b00;
+        branch = 1;
+        sel_jump = 0;
+        alu_op = 2'b01;
+    end
+    7'b0110111: begin 
+        rf_we = 1'b1;
+        sel_ext = 3'b101;      
+        sel_alu_src_b = 1'b1;
+        dmem_we = 1'b0;
+        sel_result = 2'b00;  
+        branch = 0;
+        sel_jump = 0;         
+        alu_op = 2'b00;
+    end
+    7'b1101111: begin 
+        rf_we = 1'b1;
+        sel_ext = 3'b100;  
+        sel_alu_src_b = 1'b1;
+        dmem_we = 1'b0;
+        sel_result = 2'b10;    
+        branch = 0;
+        sel_jump = 1;       
+        alu_op = 2'b00;
+    end
     default: begin
-        sel_result = 0;
-        dmem_we = 0;
-        sel_alu_src_b = 0;
-        sel_ext = 2'b00;
-        rf_we = 0;
+        rf_we = 1'b0;
+        sel_ext = 3'b111;
+        sel_alu_src_b = 1'b0;
+        dmem_we = 1'b0;
+        sel_result = 2'b00;
+        branch = 0;
+        sel_jump = 0;
         alu_op = 2'b00; 
     end
     endcase
