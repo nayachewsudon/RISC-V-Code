@@ -3,17 +3,19 @@
 
 module controller_tb ();
 
-    //DUT Inputs
+    // DUT Inputs
     reg [6:0] op;
     reg [2:0] funct3;
-    reg funct7;
+    reg funct7; // note: only bit 5 of funct7
 
-    //Outputs
-    wire sel_result, dmem_we, sel_alu_src_b, rf_we;
-    wire [1:0] sel_ext, alu_op;
+    // Outputs
+    wire [1:0] sel_result;
+    wire dmem_we, sel_alu_src_b, rf_we, branch, sel_jump;
+    wire [2:0] sel_ext;
+    wire [1:0] alu_op;
     wire [3:0] alu_control;
 
-    //DUT Instantiation
+    // DUT Instantiation
     controller_stageone stage1 (
         .op(op),
         .sel_result(sel_result),
@@ -21,6 +23,8 @@ module controller_tb ();
         .dmem_we(dmem_we),
         .sel_ext(sel_ext),
         .rf_we(rf_we),
+        .branch(branch),
+        .sel_jump(sel_jump),
         .alu_op(alu_op)
     );
 
@@ -69,5 +73,26 @@ module controller_tb ();
         $display("sw: alu_control = %b", alu_control);
         $display("opcode=%b sel_result=%b dmem_we=%b sel_alu_src_b=%b rf_we=%b alu_op=%b", 
         op, sel_result, dmem_we, sel_alu_src_b, rf_we, alu_op);
+
+        //beq
+        op = 7'b1100011; funct3 = 3'b000; funct7 = 1'b1; // SUB used for comparison
+        #1;
+        $display("BEQ: alu_control = %b", alu_control);
+        $display("opcode=%b branch=%b sel_jump=%b alu_op=%b", 
+                 op, branch, sel_jump, alu_op);
+
+        //lui
+        op = 7'b0110111; funct3 = 3'bxxx; funct7 = 0;
+        #1;
+        $display("LUI: alu_control = %b", alu_control);
+        $display("opcode=%b sel_result=%b sel_alu_src_b=%b rf_we=%b alu_op=%b", 
+                 op, sel_result, sel_alu_src_b, rf_we, alu_op);
+
+        //jal
+        op = 7'b1101111; funct3 = 3'bxxx; funct7 = 0;
+        #1;
+        $display("JAL: alu_control = %b", alu_control);
+        $display("opcode=%b sel_result=%b sel_jump=%b rf_we=%b alu_op=%b", 
+                 op, sel_result, sel_jump, rf_we, alu_op);
     end
 endmodule

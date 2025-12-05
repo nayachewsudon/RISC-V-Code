@@ -52,7 +52,7 @@ always @ (*) begin
         sel_jump = 0;
         alu_op = 2'b10;
     end
-    7'b1100011: begin
+    7'b1100011: begin //beq
         rf_we = 1'b0;
         sel_ext = 3'b011;
         sel_alu_src_b = 1'b0;
@@ -60,9 +60,9 @@ always @ (*) begin
         sel_result = 2'b00;
         branch = 1;
         sel_jump = 0;
-        alu_op = 2'b01;
+        alu_op = 2'b11;
     end
-    7'b0110111: begin 
+    7'b0110111: begin //lui
         rf_we = 1'b1;
         sel_ext = 3'b101;      
         sel_alu_src_b = 1'b1;
@@ -72,7 +72,7 @@ always @ (*) begin
         sel_jump = 0;         
         alu_op = 2'b00;
     end
-    7'b1101111: begin 
+    7'b1101111: begin //jal
         rf_we = 1'b1;
         sel_ext = 3'b100;  
         sel_alu_src_b = 1'b1;
@@ -80,7 +80,7 @@ always @ (*) begin
         sel_result = 2'b10;    
         branch = 0;
         sel_jump = 1;       
-        alu_op = 2'b11;
+        alu_op = 2'b00;
     end
     default: begin
         rf_we = 1'b0;
