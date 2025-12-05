@@ -27,6 +27,14 @@ end
 
 endmodule
 //--------------------------------------------------------------------------------------------
+module adder_general (
+    input [31:0] a, 
+    input [31:0] b, 
+    output [31:0] sum
+);
+    assign sum = a + b; 
+endmodule
+//--------------------------------------------------------------------------------------------
 module multiplexer (
     input [31:0] in_a, in_b,
     input sel,
@@ -42,6 +50,30 @@ always @(*) begin
     end 
 end
 
+endmodule
+//--------------------------------------------------------------------------------------------
+module mux_3to1 (
+    input [31:0] in_a, in_b, in_c,
+    input [1:0] sel_res,
+    output reg [31:0] out_m
+); 
+
+always @(*) begin
+    case (sel_res)
+    2'b00: begin
+        out_m = in_a;
+    end
+    2'b01: begin
+        out_m = in_b;
+    end
+    2'b10: begin
+        out_m = in_c;
+    end
+    default: begin
+        out_m = 32'b0;
+    end
+    endcase
+end
 endmodule
 //--------------------------------------------------------------------------------------------
 module register_file(

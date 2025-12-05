@@ -84,11 +84,13 @@ multiplexer multiplexer2(
 );
 
 //--Controller (bagian pertama)--
-wire sel_result; 
+wire [1:0] sel_result; 
 wire dmem_we; 
 wire sel_alu_src_b;
-wire [1:0] sel_ext;
+wire [2:0] sel_ext;    
 wire rf_we;
+wire branch;             
+wire sel_jump;          
 wire [1:0] alu_op;
 
 controller_stageone controller_stageone(
@@ -98,6 +100,8 @@ controller_stageone controller_stageone(
     .sel_alu_src_b(sel_alu_src_b),
     .sel_ext(sel_ext),
     .rf_we(rf_we),
+    .branch(branch),        
+    .sel_jump(sel_jump),  
     .alu_op(alu_op)
 );
 
@@ -128,5 +132,10 @@ alu alu(
     .alu_controller(alu_control),
     .rd(alu_output)
 );
+
+//--Branch/Jump Logic--
+wire zero_flag;              
+wire sel_pc;               
+assign sel_pc = (branch & zero_flag) | sel_jump;
 
 endmodule
