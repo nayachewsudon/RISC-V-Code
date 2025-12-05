@@ -27,7 +27,6 @@ initial begin
     #20;
     reset = 0;
     
-    // DEBUG: Check if instructions loaded
     $display("=== Instruction Memory Check ===");
     $display("Memory[0] = 0x%h", riscv_inst.instruction_memory.Memory[0]);
     $display("Memory[1] = 0x%h", riscv_inst.instruction_memory.Memory[1]);
