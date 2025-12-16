@@ -111,7 +111,7 @@ end
 
 endmodule
 //--------------------------------------------------------------------------------------------
-module memory #(parameter MEM_DEPTH = 32)(
+module mem #(parameter MEM_DEPTH = 32)(
     input [31:0] addr_memory,
     input [31:0] writedata,
     input we_mem,
@@ -121,25 +121,25 @@ module memory #(parameter MEM_DEPTH = 32)(
 
 ); 
 
-reg [31:0] Memory [0:MEM_DEPTH -1];
+reg [31:0] RAM [0:MEM_DEPTH -1];
 integer i; 
 
 //Initialize memory (to help testing)
 initial begin
-    $readmemh("test.hex", Memory);
+    $readmemh("test.hex", RAM);
 end
 
-assign read_data = Memory[addr_memory[7:2]]; //rd_im intermediate register
+assign read_data = RAM[addr_memory[7:2]];
 
 always @ (posedge clk or negedge reset_n) begin 
     if (!reset_n) begin
         for (i = 0; i < MEM_DEPTH; i++) begin
-            Memory[i] = 32'h00000000;
+            RAM[i] = 32'h00000000;
         end
-        $readmemh("test.hex", Memory); //Reload after reset
+        $readmemh("test.hex", RAM); //Reload after reset
     end 
     else if (we_mem) begin 
-        Memory[addr_memory[7:2]] = writedata; 
+        RAM[addr_memory[7:2]] = writedata; 
     end
 end
 
