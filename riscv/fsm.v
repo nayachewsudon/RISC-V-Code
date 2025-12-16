@@ -5,18 +5,16 @@ module fsm(
     //reset
     input reset_n,
     output reg [3:0] state,
-    output sel_result,
-    output sel_alu_src_b,
-    output sel_alu_src_a,
-    output we_pc,
-    output sel_mem_addr,
+    output [1:0] sel_result,
+    output [1:0] sel_alu_src_b,
+    output [1:0] sel_alu_src_a,
+    output [1:0]sel_mem_addr,
     output we_mem,
     output we_ir,
-    output sel_ext,
     output we_rf,
-    output alu_op,
-    output pc_update, //not an output of fsm
-    output branch
+    output alu_op, //only an output of FSM
+    output pc_update, //only an output of FSM
+    output branch //only an output of FSM
     //alu_control is not in FSM
 );
 

@@ -1,4 +1,4 @@
-module controller_stagetwo(
+module alu_decoder(
     input [2:0] funct3, 
     input funct7, //ambil bit ke-6 di bagian funct7
     input [1:0] alu_op, 
