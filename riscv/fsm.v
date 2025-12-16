@@ -3,6 +3,7 @@ module fsm(
     input [6:0] op, 
     //funct3 and funct7 are in alu decoder
     //reset
+    input zero, //TODO: NOT IN THE CURRENT DIAGRAM
     input reset_n,
     output reg [3:0] state,
     output sel_result,
@@ -14,7 +15,9 @@ module fsm(
     output we_ir,
     output sel_ext,
     output we_rf,
-    output alu_op
+    output alu_op,
+    output pc_update, //PC_UPDATE IS NOT WE_PC
+    output branch
     //alu_control is not in FSM
 );
 
@@ -34,10 +37,10 @@ module fsm(
     always@(*) begin
         next = state;
         //TODO: check
-        we_pc = 0;
         we_ir = 0; 
         we_mem = 0;
         we_rf = 0;
+        branch = 0;
 
         case (state)
         FETCH:
@@ -111,7 +114,7 @@ module fsm(
             sel_alu_src_b = 00;
             alu_op = 01; 
             sel_result = 00;
-            //branch? 
+            branch = 1; 
 
             next = FETCH;
 
