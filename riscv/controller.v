@@ -9,7 +9,6 @@ module controller(
     input [6:0] op, 
     input [2:0] funct3,
     input funct7,
-    output we_pc
     //--FSM OUTPUTS--
     output [1:0] sel_result,
     output [1:0] sel_alu_src_b,
@@ -40,7 +39,6 @@ fsm fsm (
     .sel_result(sel_result),
     .sel_alu_src_a(sel_alu_src_a),
     .sel_alu_src_b(sel_alu_src_b),
-    .we_pc(we_pc),
     .sel_mem_addr(sel_mem_addr),
     .we_mem(we_mem),
     .we_ir(we_ir),

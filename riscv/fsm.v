@@ -12,7 +12,7 @@ module fsm(
     output reg we_mem,
     output reg we_ir,
     output reg we_rf,
-    output reg alu_op, //only an output of FSM
+    output reg [1:0] alu_op, //only an output of FSM
     output reg pc_update, //only an output of FSM
     output reg branch //only an output of FSM
     //alu_control is not in FSM
