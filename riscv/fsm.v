@@ -5,16 +5,16 @@ module fsm(
     //reset
     input reset_n,
     output reg [3:0] state,
-    output [1:0] sel_result,
-    output [1:0] sel_alu_src_b,
-    output [1:0] sel_alu_src_a,
-    output [1:0]sel_mem_addr,
-    output we_mem,
-    output we_ir,
-    output we_rf,
-    output alu_op, //only an output of FSM
-    output pc_update, //only an output of FSM
-    output branch //only an output of FSM
+    output reg [1:0] sel_result,
+    output reg [1:0] sel_alu_src_b,
+    output reg [1:0] sel_alu_src_a,
+    output reg [1:0]sel_mem_addr,
+    output reg we_mem,
+    output reg we_ir,
+    output reg we_rf,
+    output reg alu_op, //only an output of FSM
+    output reg pc_update, //only an output of FSM
+    output reg branch //only an output of FSM
     //alu_control is not in FSM
 );
 
@@ -29,39 +29,41 @@ module fsm(
     parameter BEQ = 8; 
     parameter EXE_I = 9; 
     parameter JAL = 10;
-    parameter [3:0] next; //TODO: check if i have to initiate
+    parameter LUI = 11; 
+    reg [3:0] next; //TODO: check if i have to initiate
 
     always@(*) begin
         next = state;
-        //TODO: check
+        //TODO: initialize all variables as 0
         we_ir = 0; 
         we_mem = 0;
         we_rf = 0;
         branch = 0;
 
-        case (state)
-        FETCH:
+        case (state) 
+        FETCH: begin
             next = DECODE;
             sel_mem_addr = 0; 
-            ir_we = 1; //TODO: check
+            we_ir = 1; //TODO: check
             sel_alu_src_a = 00; 
             sel_alu_src_b = 10; 
             alu_op = 00; 
             sel_result = 10; 
             pc_update = 1; //TODO: check
-
+        end
         DECODE: begin
             if (op == 0000011 || op == 0100011) next = EXE_ADDR; 
             if (op == 0110011) next = EXE_R; 
             if (op == 0010011) next = EXE_I; 
             if (op == 1101111) next = JAL;
             if (op == 1100011) next = BEQ;
+            //--ADDED NEW STATE LUI--
+            if(op == 0110111) next = LUI;
         end
 
         EXE_ADDR: begin
             sel_alu_src_a = 10;
             sel_alu_src_b = 01; 
-            sel_sign_ext = 00;
             alu_op = 00;
 
             if (op == 0000011) next = MEM_RD;
@@ -70,7 +72,7 @@ module fsm(
 
         MEM_RD: begin
             sel_result = 00; 
-            sel_mem_addr = 1; //TODO: check
+            sel_mem_addr = 1;
     
             next = WB_MEM;
         end
@@ -133,7 +135,16 @@ module fsm(
 
             next = WB_ALU;
         end
-
+        //--NEW STATE LUI--
+        LUI: begin
+            sel_alu_src_a = 01; 
+            sel_alu_src_b = 01; 
+            sel_result = 10; 
+            alu_op = 00; 
+            we_rf = 1;
+            next = FETCH; 
+        end
+        default: next = FETCH;
 
         endcase
     end

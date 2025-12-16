@@ -55,10 +55,14 @@ alu_decoder alu_decoder (
     .funct7(funct7),
     .alu_op(alu_op),
     .alu_control(alu_control)
-)
+);
 
 instruction_decoder instruction_decoder(
     .op(op),
     .sel_ext(sel_ext)
-)
+);
+
+//Gates
+assign we_pc = (zero & branch) | pc_update;
+
 endmodule
