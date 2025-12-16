@@ -10,13 +10,15 @@ module alu_tb ();
 
     //DUT Outputs
     wire [31:0] rd;
+    wire zero_flag;
 
     //DUT Instantiation
     alu dut (
         .a(a),
         .b(b),
         .alu_controller(alu_controller),
-        .rd(rd)
+        .rd(rd),
+        .zero_flag(zero_flag)
     );
 
     //Waveform dump

@@ -143,9 +143,48 @@ always @ (posedge clk_dm or posedge reset_dm) begin
         end
     end 
     if (we) begin 
-        data_memory[a_dm [6:2]] = wd_dm; 
+        data_memory[a_dm[6:2]] = wd_dm; 
     end
 end
 
 
 endmodule
+//-----------------------------------------
+module memory ( //TODO: sesuaikan datapath flow untuk memory
+    input [31:0] a_memory,
+    input [31:0] writedata,
+    input writeenable,
+    input clk, 
+    input reset_n,
+    output register_data
+
+); 
+
+reg [31:0] Memory [63:0]; // initialize memory storage
+integer i; 
+
+//Initialize memory (to help testing)
+initial begin
+    $readmemh("test.hex", Memory);
+end
+
+assign rd_im = Memory[a_im[7:2]]; //rd_im intermediate register
+
+reg [31:0] data_memory [31 : 0];
+integer i;
+assign rd_dm = data_memory[a_dm];
+
+always @ (posedge clk_dm or posedge reset_dm) begin
+    if (reset_dm) begin
+        for (i = 0; i < 32; i++) begin
+            data_memory[i] = 32'h00000000;
+        end
+    end 
+    if (we) begin 
+        data_memory[a_dm[6:2]] = wd_dm; 
+    end
+end
+
+endmodule
+
+
