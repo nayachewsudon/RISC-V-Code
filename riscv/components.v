@@ -1,10 +1,10 @@
 module programcounter (
     input [31:0] in_pc,
-    input clk_pc,
+    input clk,
     input reset_pc,
     output reg [31:0] out_pc
 );
-    always @ (posedge clk_pc or posedge reset_pc) begin 
+    always @ (posedge clk or posedge reset_pc) begin 
      
         if (reset_pc) begin
             out_pc <= 32'b0;//reset value
@@ -16,26 +16,9 @@ module programcounter (
     end
 endmodule
 //--------------------------------------------------------------------------------------------
-module adder ( //TODO:bener kagak?
-    input [31:0] pc,
-    output reg [31:0] pc_plus_4
-); 
-
-always @(*) begin
-    pc_plus_4 = 4 + pc;
-end
-
-endmodule
+//DELETED ADDERS IN RISC-V MULTICYCLE PROCESSORS
 //--------------------------------------------------------------------------------------------
-module adder_general (
-    input [31:0] a, 
-    input [31:0] b, 
-    output [31:0] sum
-);
-    assign sum = a + b; 
-endmodule
-//--------------------------------------------------------------------------------------------
-module multiplexer (
+module mux_2to1 (
     input [31:0] in_a, in_b,
     input sel,
     output reg [31:0] out_m
@@ -60,13 +43,13 @@ module mux_3to1 (
 
 always @(*) begin
     case (sel_res)
-    2'b00: begin //alu
+    2'b00: begin
         out_m = in_a;
     end
-    2'b01: begin //dm
+    2'b01: begin 
         out_m = in_b;
     end
-    2'b10: begin //pc+4
+    2'b10: begin
         out_m = in_c;
     end
     default: begin
@@ -76,9 +59,31 @@ always @(*) begin
 end
 endmodule
 //--------------------------------------------------------------------------------------------
+module mux_3to1_offset(
+    input [31:0] in_a, in_b,
+    input [1:0] sel,
+    output reg [31:0] out
+);
+
+    case (sel)
+    2'b00: begin
+        out_m = in_a;
+    end
+    2'b01: begin 
+        out_m = in_b;
+    end
+    2'b10: begin
+        out_m = 2'd4;
+    end
+    default: begin
+        out_m = 32'b0;
+    end
+    endcase
+endmodule
+//--------------------------------------------------------------------------------------------
 module register_file(
     input clk_r, 
-    input reset_r,
+    input reset_n,
     input [4:0] a1, //register addresses
     input [4:0] a2, 
     input [4:0] a3, 
@@ -87,14 +92,14 @@ module register_file(
     input we3 //write enable bit
 );
 
-reg [31:0] Registers [63:0]; //the 32 addresses in the register file from x0 to x32
+reg [31:0] Registers [31:0];
 integer i; 
 
 assign rd1 = Registers[a1];
 assign rd2 = Registers[a2];
 
-always @ (posedge clk_r or posedge reset_r) begin
-    if (reset_r) begin
+always @ (posedge clk_r or negedge reset_n) begin
+    if (!reset_n) begin
         for (i = 0; i<64; i = i+1) begin
            Registers[i] = 32'd0; 
         end
@@ -106,7 +111,7 @@ end
 
 endmodule
 //--------------------------------------------------------------------------------------------
-module memory #(parameter MEM_DEPTH = 64)(
+module memory #(parameter MEM_DEPTH = 32)(
     input [31:0] addr_memory,
     input [31:0] writedata,
     input we_mem,
@@ -116,7 +121,7 @@ module memory #(parameter MEM_DEPTH = 64)(
 
 ); 
 
-reg [31:0] Memory [0:MEM_DEPTH -1]; // Change this to MEM_DEPTH -1
+reg [31:0] Memory [0:MEM_DEPTH -1];
 integer i; 
 
 //Initialize memory (to help testing)
