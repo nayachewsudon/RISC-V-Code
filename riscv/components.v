@@ -37,12 +37,12 @@ endmodule
 //--------------------------------------------------------------------------------------------
 module mux_3to1 (
     input [31:0] in_a, in_b, in_c,
-    input [1:0] sel_res,
+    input [1:0] sel,
     output reg [31:0] out_m
 ); 
 
 always @(*) begin
-    case (sel_res)
+    case (sel)
     2'b00: begin
         out_m = in_a;
     end
@@ -65,20 +65,22 @@ module mux_3to1_offset(
     output reg [31:0] out
 );
 
+   always @(*) begin
     case (sel)
     2'b00: begin
-        out_m = in_a;
+        out = in_a;
     end
     2'b01: begin 
-        out_m = in_b;
+        out = in_b;
     end
     2'b10: begin
-        out_m = 2'd4;
+        out = 32'd4;
     end
     default: begin
-        out_m = 32'b0;
+        out = 32'b0;
     end
     endcase
+   end
 endmodule
 //--------------------------------------------------------------------------------------------
 module register_file(

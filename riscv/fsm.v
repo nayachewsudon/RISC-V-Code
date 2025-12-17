@@ -8,7 +8,7 @@ module fsm(
     output reg [1:0] sel_result,
     output reg [1:0] sel_alu_src_b,
     output reg [1:0] sel_alu_src_a,
-    output reg [1:0]sel_mem_addr,
+    output reg sel_mem_addr,
     output reg we_mem,
     output reg we_ir,
     output reg we_rf,

@@ -5,7 +5,7 @@
 module controller(
     input clk, 
     input reset_n,
-    input zero, //TODO: NOT IN THE CURRENT DIAGRAM
+    input zero,
     input [6:0] op, 
     input [2:0] funct3,
     input funct7,
@@ -13,7 +13,7 @@ module controller(
     output [1:0] sel_result,
     output [1:0] sel_alu_src_b,
     output [1:0] sel_alu_src_a,
-    output [1:0] sel_mem_addr,
+    output sel_mem_addr,
     output we_mem,
     output we_ir,
     output we_rf,
