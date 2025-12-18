@@ -1,22 +1,5 @@
-module programcounter (
-    input [31:0] in_pc,
-    input clk,
-    input reset_pc,
-    output reg [31:0] out_pc
-);
-    always @ (posedge clk or posedge reset_pc) begin 
-     
-        if (reset_pc) begin
-            out_pc <= 32'b0;//reset value
-        end
-        else begin
-            out_pc <= in_pc;
-        end
-    
-    end
-endmodule
 //--------------------------------------------------------------------------------------------
-//DELETED ADDERS IN RISC-V MULTICYCLE PROCESSORS
+//DELETED ADDERS AND PROGRAM COUNTER IN RISC-V MULTICYCLE PROCESSORS
 //--------------------------------------------------------------------------------------------
 module mux_2to1 (
     input [31:0] in_a, in_b,
@@ -131,17 +114,15 @@ initial begin
     $readmemh("test.hex", RAM);
 end
 
-assign read_data = RAM[addr_memory[7:2]];
+assign read_data = RAM[addr_memory[6:2]];
 
-always @ (posedge clk or negedge reset_n) begin 
+//Active low reset logic - reset active (0) => clear memory + reload from file 
+always @ (posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-        for (i = 0; i < MEM_DEPTH; i++) begin
-            RAM[i] <= 32'h00000000;
-        end
         $readmemh("test.hex", RAM); //Reload after reset
     end 
     else if (we_mem) begin 
-        RAM[addr_memory[7:2]] <= writedata; 
+        RAM[addr_memory[6:2]] <= writedata; 
     end
 end
 
