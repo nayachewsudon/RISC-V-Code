@@ -102,12 +102,12 @@ assign rd2 = Registers[a2];
 
 always @ (posedge clk_r or negedge reset_n) begin
     if (!reset_n) begin
-        for (i = 0; i<64; i = i+1) begin
-           Registers[i] = 32'd0; 
+        for (i = 0; i<32; i = i+1) begin
+           Registers[i] <= 32'd0; 
         end
     end
     else if (we3 && a3 != 0) begin
-        Registers[a3] = wd3;
+        Registers[a3] <= wd3;
     end 
 end
 
@@ -136,12 +136,12 @@ assign read_data = RAM[addr_memory[7:2]];
 always @ (posedge clk or negedge reset_n) begin 
     if (!reset_n) begin
         for (i = 0; i < MEM_DEPTH; i++) begin
-            RAM[i] = 32'h00000000;
+            RAM[i] <= 32'h00000000;
         end
         $readmemh("test.hex", RAM); //Reload after reset
     end 
     else if (we_mem) begin 
-        RAM[addr_memory[7:2]] = writedata; 
+        RAM[addr_memory[7:2]] <= writedata; 
     end
 end
 

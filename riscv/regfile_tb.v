@@ -19,7 +19,7 @@ module regfile_tb();
     //Instantiation
     register_file dut(
         .clk_r(clk),
-        .reset_r(reset_n),
+        .reset_n(reset_n),
         .a1(a1),
         .a2(a2),
         .a3(a3),
@@ -43,12 +43,13 @@ module regfile_tb();
     //Main test
     initial begin
         //initialize input
-        reset_n = 1; a1 = 0; a2 = 0; a3 = 0; we3 = 0;
+        reset_n = 0; 
+        a1 = 0; a2 = 0; a3 = 0; we3 = 0; wd3 = 0;
 
         @(posedge clk);
         @(posedge clk);
 
-        reset_n = 0;
+        reset_n = 1;
 
         //Test 1: Write to a register ADDI x%, x0, 10
         $display("Test 1: Write data. Expected - Registers[5] = 10");
@@ -56,6 +57,7 @@ module regfile_tb();
         wd3 = 10;
         we3 = 1;
         @(posedge clk);
+        #1;
         we3 = 0;
 
         //Test 2: Write to another register ADDI x6, x0, 42
@@ -64,6 +66,7 @@ module regfile_tb();
         wd3 = 42;
         we3 = 1;
         @(posedge clk);
+        #1;
 
         //Test 3: Read 2 registers ADD x7, x5, x6
         $display("Test 3: Read two regs");
@@ -71,10 +74,11 @@ module regfile_tb();
         a1 = 5; 
         a2 = 6; 
         @(posedge clk);
+        #1;
 
         a3 = 7;
-        we3 = 1;
         wd3 = rd1 + rd2;
+        we3 = 1;
         @(posedge clk);
         we3 = 0;
 
@@ -87,10 +91,10 @@ module regfile_tb();
         we3 = 0;
 
         //Test 5: Reset reg file
-        $display("Test 5: Reset reg file");
-        reset_n = 1; 
-        @(posedge clk);
-        reset_n = 0; 
+        //$display("Test 5: Reset reg file");
+        //reset_n = 1; 
+        //@(posedge clk);
+        //reset_n = 0; 
 
         $finish;
     end

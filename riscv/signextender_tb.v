@@ -31,7 +31,7 @@ module signextender_tb();
         $display("I-type/LW: A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 
         A = 25'hFFF123; 
-        sel_ext = 3'b010; 
+        sel_ext = 3'b000; 
         #1;
         $display("I-type/LW (negative): A=%h sel_ext=%b => out=%h", A, sel_ext, out);
 

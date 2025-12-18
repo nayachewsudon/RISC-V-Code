@@ -4,11 +4,11 @@
 module testbench;
 
 reg clk;
-reg reset;
+reg rst;
 
-riscv riscv_inst (
+rv_mc riscv_mc_inst (
     .clk(clk),
-    .reset(reset)
+    .reset(rst)
 );
 
 // Clock generation
