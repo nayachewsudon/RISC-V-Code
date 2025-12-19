@@ -7,10 +7,10 @@ module alu_decoder(
 
 always @ (*) begin
     case (alu_op)
-    2'b00: begin
+    2'b00: begin //lw, sw, jal and lui
         alu_control = {3'b000, 1'b0};
     end 
-    2'b01, 2'b10: begin
+    2'b10: begin //rtype and itype
         case (funct3)
         3'b000: begin
             case (funct7)
@@ -18,7 +18,7 @@ always @ (*) begin
                 alu_control = 4'b0000;
             end
             1'b1: begin
-                alu_control = 4'b1000; //this is subtraction, beq has to go here
+                alu_control = 4'b1000; 
             end
             default: alu_control = 4'bxxxx; 
             endcase
@@ -55,9 +55,10 @@ always @ (*) begin
         default: alu_control = 4'bxxxx;
         endcase
     end
-    2'b11: begin
+    2'b01: begin //beq for alu control subtraction
         alu_control = 4'b1000;
     end
+    
     default: alu_control = 4'bxxxx;
     endcase
 end
