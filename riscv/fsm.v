@@ -147,7 +147,7 @@ module fsm(
         end
         //--NEW STATE LUI--
         LUI: begin
-            sel_alu_src_a = 2'b01; 
+            sel_alu_src_a = 2'b11; 
             sel_alu_src_b = 2'b01; 
             sel_result = 2'b10; 
             alu_op = 2'b00; 

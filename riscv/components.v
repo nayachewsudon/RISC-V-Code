@@ -66,6 +66,34 @@ module mux_3to1_offset(
    end
 endmodule
 //--------------------------------------------------------------------------------------------
+
+module mux_4to1_andzero( //For LUI
+    input [31:0] in_a, in_b,in_c,
+    input [1:0] sel,
+    output reg [31:0] out
+);
+
+   always @(*) begin
+    case (sel)
+    2'b00: begin
+        out = in_a;
+    end
+    2'b01: begin 
+        out = in_b;
+    end
+    2'b10: begin
+        out = in_c;
+    end
+    2'b11: begin //For LUI 
+        out = 32'b0;
+    end
+    default: begin
+        out = 32'bx;
+    end
+    endcase
+   end
+endmodule
+//--------------------------------------------------------------------------------------------
 module register_file(
     input clk_r, 
     input reset_n,

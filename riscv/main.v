@@ -130,12 +130,12 @@ signextender SIGNEXTENDER(
 
 //--Multiplexer 2
 wire [31:0] mux2_output;
-mux_3to1 MUX_2(
+mux_4to1_andzero MUX_2( 
     .in_a(pc_reg), //input from incremented pc
     .in_b(old_pc_reg), //input from OldPc
     .in_c(rd1_reg), //Input from RD1_reg
     .sel(sel_alu_src_a),
-    .out_m(mux2_output)
+    .out(mux2_output)
 );
 
 //--Multiplexer 3
