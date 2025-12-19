@@ -16,18 +16,18 @@ module fsm(
     //alu_control is not in FSM
 );
 
-    parameter FETCH = 0; 
-    parameter DECODE = 1; 
-    parameter EXE_ADDR = 2; 
-    parameter MEM_RD = 3;
-    parameter WB_MEM = 4;
-    parameter MEM_WRITE = 5; 
-    parameter EXE_R = 6; 
-    parameter WB_ALU = 7; 
-    parameter BEQ = 8; 
-    parameter EXE_I = 9; 
-    parameter JAL = 10;
-    parameter LUI = 11; 
+    localparam FETCH = 0; 
+    localparam DECODE = 1; 
+    localparam EXE_ADDR = 2; 
+    localparam MEM_RD = 3;
+    localparam WB_MEM = 4;
+    localparam MEM_WRITE = 5; 
+    localparam EXE_R = 6; 
+    localparam WB_ALU = 7; 
+    localparam BEQ = 8; 
+    localparam EXE_I = 9; 
+    localparam JAL = 10;
+    localparam LUI = 11; 
     reg [3:0] next;
 
     always @(posedge clk or negedge reset_n) begin
