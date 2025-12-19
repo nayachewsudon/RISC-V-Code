@@ -37,7 +37,7 @@ always @(*) begin
         end
         4'b1101: //sra
         begin 
-            alu_result = $signed(a) >>> b[4:0]; //CHANGE: add signed because sra is for SIGNED numbers
+            alu_result = $signed(a) >>> b[4:0]; 
         end
         4'b0110: //or
         begin 

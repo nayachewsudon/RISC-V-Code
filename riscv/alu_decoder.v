@@ -10,52 +10,49 @@ always @ (*) begin
     2'b00: begin //lw, sw, jal and lui
         alu_control = {3'b000, 1'b0};
     end 
-    2'b10: begin //rtype and itype
+    2'b01: begin //R-type
         case (funct3)
         3'b000: begin
-            case (funct7)
-            1'b0: begin //add
-                alu_control = 4'b0000;
-            end
-            1'b1: begin //sub
-                alu_control = 4'b1000; 
-            end
-            default: alu_control = 4'bxxxx; 
-            endcase
+            if (funct7 == 1'b1)
+                alu_control = 4'b1000; //sub
+            else
+                alu_control = 4'b0000; // add
         end
-        3'b001: begin //sll
-            alu_control = 4'b0001;
+        3'b001: alu_control = 4'b0001; //sll
+        3'b010: alu_control = 4'b0010; //slt
+        3'b011: alu_control = 4'b0011; //sltu
+        3'b100: alu_control = 4'b0100; //xor
+        3'b101: begin
+            if (funct7 == 1'b1)
+                alu_control = 4'b1101; // sra
+            else
+                alu_control = 4'b0101; // srl
         end
-        3'b010: begin //slt
-            alu_control = 4'b0010;
-        end
-        3'b011: begin //sltu
-            alu_control = 4'b0011;
-        end
-        3'b100: begin //xor
-            alu_control = 4'b0100;
-        end
-        3'b101: begin //slr
-            case (funct7)
-            1'b0: begin
-                alu_control = 4'b0101;
-            end
-            1'b1: begin //sra
-                alu_control = 4'b1101;
-            end
-            default: alu_control = 4'bxxxx;
-            endcase 
-        end
-        3'b110: begin //or
-            alu_control = 4'b0110;
-        end
-        3'b111: begin //and
-            alu_control = 4'b0111;
-        end
+        3'b110: alu_control = 4'b0110; //or
+        3'b111: alu_control = 4'b0111; //and
         default: alu_control = 4'bxxxx;
         endcase
     end
-    2'b01: begin //beq for alu control subtraction
+    
+    2'b10: begin //I-type
+        case (funct3)
+        3'b000: alu_control = 4'b0000; // addi
+        3'b001: alu_control = 4'b0001; // slli
+        3'b010: alu_control = 4'b0010; // slti
+        3'b011: alu_control = 4'b0011; // sltiu
+        3'b100: alu_control = 4'b0100; // xori
+        3'b101: begin
+            if (funct7 == 1'b1)
+                alu_control = 4'b1101; // srai
+            else
+                alu_control = 4'b0101; // slri
+        end
+        3'b110: alu_control = 4'b0110; // ori
+        3'b111: alu_control = 4'b0111; // andi
+        default: alu_control = 4'bxxxx;
+        endcase
+    end
+    2'b01: begin
         alu_control = 4'b1000;
     end
     

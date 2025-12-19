@@ -106,7 +106,7 @@ module fsm(
         EXE_R: begin
             sel_alu_src_a = 2'b10; 
             sel_alu_src_b = 2'b00;
-            alu_op = 2'b10;
+            alu_op = 2'b01;
 
             next = WB_ALU; 
         end
