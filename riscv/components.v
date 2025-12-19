@@ -101,7 +101,6 @@ module mem #(parameter MEM_DEPTH = 32)(
     input [31:0] writedata,
     input we_mem,
     input clk, 
-    input reset_n,
     output [31:0] read_data
 
 ); 
@@ -109,19 +108,11 @@ module mem #(parameter MEM_DEPTH = 32)(
 reg [31:0] RAM [0:MEM_DEPTH -1];
 integer i; 
 
-//Initialize memory (to help testing)
-initial begin
-    $readmemh("test.hex", RAM);
-end
-
 assign read_data = RAM[addr_memory[6:2]];
 
 //Active low reset logic - reset active (0) => clear memory + reload from file 
-always @ (posedge clk or negedge reset_n) begin
-    if (!reset_n) begin
-        $readmemh("test.hex", RAM); //Reload after reset
-    end 
-    else if (we_mem) begin 
+always @ (posedge clk) begin
+    if (we_mem) begin 
         RAM[addr_memory[6:2]] <= writedata; 
     end
 end

@@ -30,7 +30,7 @@ module fsm(
     localparam LUI = 11; 
     reg [3:0] next;
 
-    always @(posedge clk or negedge reset_n) begin
+    always @(posedge clk) begin
         if (!reset_n) 
             state <= FETCH; 
         else 
@@ -63,12 +63,12 @@ module fsm(
         end
         DECODE: begin
             if (op == 7'b0000011 || op == 7'b0100011) next = EXE_ADDR; 
-            if (op == 7'b0110011) next = EXE_R; 
-            if (op == 7'b0010011) next = EXE_I; 
-            if (op == 7'b1101111) next = JAL;
-            if (op == 7'b1100011) next = BEQ;
+            else if (op == 7'b0110011) next = EXE_R; 
+            else if (op == 7'b0010011) next = EXE_I; 
+            else if (op == 7'b1101111) next = JAL;
+            else if (op == 7'b1100011) next = BEQ;
             //--ADDED NEW STATE LUI--
-            if(op == 7'b0110111) next = LUI;
+            else if(op == 7'b0110111) next = LUI;
         end
 
         EXE_ADDR: begin
@@ -77,7 +77,7 @@ module fsm(
             alu_op = 2'b00;
 
             if (op == 7'b0000011) next = MEM_RD;
-            if (op == 7'b0100011) next= MEM_WRITE;
+            else if (op == 7'b0100011) next= MEM_WRITE;
         end
 
         MEM_RD: begin

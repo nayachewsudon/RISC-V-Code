@@ -20,7 +20,7 @@ reg [31:0] data_reg;
 //--PC_REG--
 always @ (posedge clk or negedge rst) begin 
         if (!rst) begin
-            pc_reg <= 32'b0;//reset value
+            pc_reg <= 32'hFFFFFFFC;//reset value
         end
         else if (we_pc) begin
             pc_reg <= mux4_output; //Output of mux 4 is used for pc_reg
@@ -40,35 +40,19 @@ always @(posedge clk or negedge rst) begin
 end
 
 //-- RD1_REG dan RD2_REG
-always @(posedge clk or negedge rst) begin
-    if (!rst) begin
-        rd1_reg <= 32'b0; 
-        rd2_reg <= 32'b0;
+always @(posedge clk) begin
+       rd1_reg <= rd1;
+        rd2_reg <= rd2; 
     end
-    else begin
-        rd1_reg <= rd1;
-        rd2_reg <= rd2;
-    end
-end
 
 //--ALU_REG
-always @(posedge clk or negedge rst) begin
-    if (!rst) begin
-        alu_reg <= 32'b0; 
-    end
-    else begin
+always @(posedge clk) begin
         alu_reg <= alu_output; //Output from ALU
-    end
 end
 
 //--DATA_REG
-always @(posedge clk or negedge rst) begin
-    if (!rst) begin
-        data_reg <= 32'b0; 
-    end
-    else begin
+always @(posedge clk) begin
         data_reg <= read_data; //Output from ALU
-    end
 end
 
 //--Controller
@@ -87,6 +71,8 @@ wire [2:0] sel_ext;
 wire we_pc;
 
 controller controller (
+    .clk(clk),
+    .reset_n(rst),
     .zero(zero),
     .op(instr_reg[6:0]), //taken from instruction_output of pc
     .funct3(instr_reg[14:12]),
@@ -113,35 +99,6 @@ mux_2to1 mux_1(
     .out_m(mux1_output)
 );
 
-//--Multiplexer 2
-wire [31:0] mux2_output;
-mux_3to1 mux_2(
-    .in_a(pc_reg), //input from incremented pc
-    .in_b(old_pc_reg), //input from OldPc
-    .in_c(rd1_reg), //Input from RD1_reg
-    .sel(sel_alu_src_a),
-    .out_m(mux2_output)
-);
-
-//--Multiplexer 3
-wire [31:0] mux3_output; 
-mux_3to1_offset mux_3(
-    .in_a(rd2_reg), //input from rd2_reg
-    .in_b(se_out),
-    .sel(sel_alu_src_b),
-    .out(mux3_output)
-);
-
-//--Multiplexer 4
-wire [31:0] mux4_output;
-mux_3to1 mux_4(
-    .in_a(alu_reg), //input from alu_reg
-    .in_b(data_reg), //input from data_reg
-    .in_c(alu_output), //alu_result from alu
-    .sel(sel_result),
-    .out_m(mux4_output)
-);
-
 //--Memory--
 wire [31:0] read_data;
 
@@ -150,8 +107,7 @@ mem MEM
     .addr_memory(mux1_output), //input from mux 1
     .writedata(rd2_reg), //Input rd2_reg, nanti sesuaikan di diagram
     .we_mem(we_mem), //input from the controller
-    .clk(clk),
-    .reset_n(rst),
+    .clk(clk), //deleted reset
     .read_data(read_data)
 );
 
@@ -180,6 +136,25 @@ signextender signextender(
     .out(se_out)
 );
 
+//--Multiplexer 2
+wire [31:0] mux2_output;
+mux_3to1 mux_2(
+    .in_a(pc_reg), //input from incremented pc
+    .in_b(old_pc_reg), //input from OldPc
+    .in_c(rd1_reg), //Input from RD1_reg
+    .sel(sel_alu_src_a),
+    .out_m(mux2_output)
+);
+
+//--Multiplexer 3
+wire [31:0] mux3_output; 
+mux_3to1_offset mux_3(
+    .in_a(rd2_reg), //input from rd2_reg
+    .in_b(se_out),
+    .sel(sel_alu_src_b),
+    .out(mux3_output)
+);
+
 //--ALU--
 wire [31:0] alu_output;
 wire zero; 
@@ -189,6 +164,16 @@ alu alu(
     .alu_controller(alu_control),
     .alu_result(alu_output),
     .zero(zero)
+);
+
+//--Multiplexer 4
+wire [31:0] mux4_output;
+mux_3to1 mux_4(
+    .in_a(alu_reg), //input from alu_reg
+    .in_b(data_reg), //input from data_reg
+    .in_c(alu_output), //alu_result from alu
+    .sel(sel_result),
+    .out_m(mux4_output)
 );
 
 endmodule

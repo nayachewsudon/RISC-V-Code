@@ -8,53 +8,71 @@ reg rst;
 
 rv_mc riscv_mc_inst (
     .clk(clk),
-    .reset(rst)
+    .rst(rst)
 );
 
-// Clock generation
 initial begin
     clk = 0;
     forever #5 clk = ~clk;
 end
 
-//Waveform dump
+//Initialize memory directly in the DUT
+initial begin
+    $readmemh("test.hex", riscv_mc_inst.MEM.RAM);
+end
+
 initial begin
     $dumpfile("riscv_test.vcd");
-    $dumpvars(0, testbench);
-    
-    // Reset sequence
-    reset = 1;
+    $dumpvars(0, riscv_mc_inst);
+
+    //Active low reset
+    rst = 0;      
     #20;
-    reset = 0;
-    
-    $display("=== Instruction Memory Check ===");
-    $display("Memory[0] = 0x%h", riscv_inst.instruction_memory.Memory[0]);
-    $display("Memory[1] = 0x%h", riscv_inst.instruction_memory.Memory[1]);
-    $display("Memory[2] = 0x%h", riscv_inst.instruction_memory.Memory[2]);
-    $display("Memory[3] = 0x%h", riscv_inst.instruction_memory.Memory[3]);
+    rst = 1; 
 
     #2000;
-        
-    $display("\n=== Final Test Results ===");
-    $display("x1 (LUI result) = 0x%h (expect 0x12345000)", riscv_inst.register_file.Registers[1]);
-    $display("x2 (ADDI 10) = %d (expect 10)", riscv_inst.register_file.Registers[2]);
-    $display("x3 (ADDI 10) = %d (expect 10)", riscv_inst.register_file.Registers[3]);
-    $display("x4 (ADDI 5) = %d (expect 5)", riscv_inst.register_file.Registers[4]);
-    $display("x5 (ADD 15) = %d (expect 15)", riscv_inst.register_file.Registers[5]);
-    $display("x6 (SUB 5) = %d (expect 5)", riscv_inst.register_file.Registers[6]);
-    $display("x7 (AND result) = %d", riscv_inst.register_file.Registers[7]);
-    $display("x8 (OR result) = %d", riscv_inst.register_file.Registers[8]);
-    $display("x9 (LW result) = %d (expect 15)", riscv_inst.register_file.Registers[9]);
-    $display("x10 (after BEQ) = %d", riscv_inst.register_file.Registers[10]);
-    $display("x11 (JAL return) = 0x%h", riscv_inst.register_file.Registers[11]);
-    $display("x12 (after JAL) = %d", riscv_inst.register_file.Registers[12]);
 
-$finish;
+    $display("\n=== FINAL REGISTER DUMP ===");
+    $display("x1  (LUI)        = 0x%h  (expect 0x12345000)", riscv_mc_inst.register_file.Registers[1]);
+    $display("x2  (ADDI 10)    = %0d   (expect 10)", riscv_mc_inst.register_file.Registers[2]);
+    $display("x3  (ADDI 20)    = %0d   (expect 20)", riscv_mc_inst.register_file.Registers[3]);
+    $display("x4  (ADDI -5)    = %0d   (expect -5)", $signed(riscv_mc_inst.register_file.Registers[4]));
+    $display("x5  (ADD)        = %0d   (expect 30)", riscv_mc_inst.register_file.Registers[5]);
+    $display("x6  (SUB)        = %0d   (expect 10)", riscv_mc_inst.register_file.Registers[6]);
+    $display("x10 (SLT)        = %0d   (expect 1)", riscv_mc_inst.register_file.Registers[10]);
+    $display("x11 (SLTU)       = %0d   (expect 0)", riscv_mc_inst.register_file.Registers[11]);
+    $display("x15 (BEQ flag)   = %0d   (expect 1)", riscv_mc_inst.register_file.Registers[15]);
+    $display("x16 (BEQ taken)  = %0d   (expect 2)", riscv_mc_inst.register_file.Registers[16]);
+    $display("x17 (JAL link)   = 0x%h", riscv_mc_inst.register_file.Registers[17]);
+    $display("x19 (after JAL)  = %0d   (expect 77)", riscv_mc_inst.register_file.Registers[19]);
+
+    $display("\n=== TEST COMPLETE ===");
+    $finish;
+end
+
+always @(posedge clk) begin
+    $display("Time=%0t | PC=%h | INSTR=%h | RD1=%h | RD2 = %h| we_ir=%b | we_pc=%b | State=%h", 
+             $time, 
+             riscv_mc_inst.pc_reg, 
+             riscv_mc_inst.instr_reg, 
+             riscv_mc_inst.rd1_reg,
+             riscv_mc_inst.rd2_reg,
+             riscv_mc_inst.we_ir, 
+             riscv_mc_inst.we_pc,
+             riscv_mc_inst.controller.state);
+end
+
+initial begin
+    #30;  // After reset
+    $display("\n=== MEMORY CONTENTS (first 10 words) ===");
+    for (integer i = 0; i < 10; i = i + 1) begin
+        $display("MEM[%0d] = 0x%h", i, riscv_mc_inst.MEM.RAM[i]);
+    end
 end
 
 initial begin
     #10000;
-    $display("Timeout");
+    $display("ERROR: Simulation timeout!");
     $finish;
 end
 
