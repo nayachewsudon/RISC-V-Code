@@ -25,7 +25,7 @@ always @(*) begin
         end
         4'b0011: //sltu 
         begin 
-            alu_result = {31'b0, a < b};
+            alu_result = (a < b) ? 32'b1 : 32'b0;
         end
         4'b0100: //xor
         begin

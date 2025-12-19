@@ -50,6 +50,11 @@ initial begin
     $finish;
 end
 
+initial begin
+    #21;
+    $display("DEBUG_AFTER_RESET: ctrl.sel_mem_addr=%b | ctrl.sel_result=%b | pc_reg=%h | mux4_output=%h", riscv_mc_inst.controller.sel_mem_addr, riscv_mc_inst.controller.sel_result, riscv_mc_inst.pc_reg, riscv_mc_inst.mux4_output);
+end
+
 always @(posedge clk) begin
     $display("Time=%0t | PC=%h | INSTR=%h | RD1=%h | RD2 = %h| we_ir=%b | we_pc=%b | State=%h", 
              $time, 
@@ -60,6 +65,19 @@ always @(posedge clk) begin
              riscv_mc_inst.we_ir, 
              riscv_mc_inst.we_pc,
              riscv_mc_inst.controller.state);
+    $display("           mux1_out=%h | mem_read_data=%h | we_rf=%b | wd3=%h | rd_addr=%0d", 
+             riscv_mc_inst.mux1_output, 
+             riscv_mc_inst.read_data,
+             riscv_mc_inst.we_rf,
+             riscv_mc_inst.mux4_output,
+             riscv_mc_inst.instr_reg[11:7]);
+    $display("           ctrl.sel_mem_addr=%b | ctrl.sel_result=%b | ctrl.sel_alu_src_a=%b | ctrl.sel_alu_src_b=%b | alu_ctrl=%b | alu_out=%h", 
+             riscv_mc_inst.controller.sel_mem_addr,
+             riscv_mc_inst.controller.sel_result,
+             riscv_mc_inst.controller.sel_alu_src_a,
+             riscv_mc_inst.controller.sel_alu_src_b,
+             riscv_mc_inst.alu_control,
+             riscv_mc_inst.alu_output);
 end
 
 initial begin

@@ -8,12 +8,12 @@ module mux_2to1 (
 ); 
 
 always @(*) begin
-   if (sel) begin 
-        out_m = in_a; 
-    end 
-    else begin 
+   if (sel) begin
         out_m = in_b;
-    end 
+    end
+    else begin
+        out_m = in_a;
+    end
 end
 
 endmodule
