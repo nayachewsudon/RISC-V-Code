@@ -11,83 +11,87 @@ rv_mc riscv_mc_inst (
     .rst(rst)
 );
 
+// Shadow register file
+reg [31:0] regfile_shadow [0:31];
+integer i;
+
+// Clock
 initial begin
     clk = 0;
     forever #5 clk = ~clk;
 end
 
-//Initialize memory directly in the DUT
+// Initialize memory
 initial begin
     $readmemh("test.hex", riscv_mc_inst.MEM.RAM);
 end
 
+// Reset and run
 initial begin
     $dumpfile("riscv_test.vcd");
     $dumpvars(0, riscv_mc_inst);
 
-    //Active low reset
     rst = 0;      
     #20;
     rst = 1; 
 
-    #2000;
+    // Initialize shadow
+    for (i = 0; i < 32; i = i + 1)
+        regfile_shadow[i] = 0;
+
+    #5000; // enough time to run all instructions
 
     $display("\n=== FINAL REGISTER DUMP ===");
-    $display("x1  (LUI)        = 0x%h  (expect 0x12345000)", riscv_mc_inst.register_file.Registers[1]);
-    $display("x2  (ADDI 10)    = %0d   (expect 10)", riscv_mc_inst.register_file.Registers[2]);
-    $display("x3  (ADDI 20)    = %0d   (expect 20)", riscv_mc_inst.register_file.Registers[3]);
-    $display("x4  (ADDI -5)    = %0d   (expect -5)", $signed(riscv_mc_inst.register_file.Registers[4]));
-    $display("x5  (ADD)        = %0d   (expect 30)", riscv_mc_inst.register_file.Registers[5]);
-    $display("x6  (SUB)        = %0d   (expect 10)", riscv_mc_inst.register_file.Registers[6]);
-    $display("x10 (SLT)        = %0d   (expect 1)", riscv_mc_inst.register_file.Registers[10]);
-    $display("x11 (SLTU)       = %0d   (expect 0)", riscv_mc_inst.register_file.Registers[11]);
-    $display("x15 (BEQ flag)   = %0d   (expect 1)", riscv_mc_inst.register_file.Registers[15]);
-    $display("x16 (BEQ taken)  = %0d   (expect 2)", riscv_mc_inst.register_file.Registers[16]);
-    $display("x17 (JAL link)   = 0x%h", riscv_mc_inst.register_file.Registers[17]);
-    $display("x19 (after JAL)  = %0d   (expect 77)", riscv_mc_inst.register_file.Registers[19]);
+    $display("x1  (LUI)        = 0x%h  (expect 0x12345000)  | %s", regfile_shadow[1], (regfile_shadow[1]==32'h12345000) ? "OK" : "WRONG");
+    $display("x2  (ADDI 10)    = %0d   (expect 10)          | %s", regfile_shadow[2], (regfile_shadow[2]==10) ? "OK" : "WRONG");
+    $display("x3  (ADDI 20)    = %0d   (expect 20)          | %s", regfile_shadow[3], (regfile_shadow[3]==20) ? "OK" : "WRONG");
+    $display("x4  (ADDI -5)    = %0d   (expect -5)          | %s", $signed(regfile_shadow[4]), ($signed(regfile_shadow[4])==-5) ? "OK" : "WRONG");
+    $display("x5  (ADD)        = %0d   (expect 30)          | %s", regfile_shadow[5], (regfile_shadow[5]==30) ? "OK" : "WRONG");
+    $display("x6  (SUB)        = %0d   (expect 10)          | %s", regfile_shadow[6], (regfile_shadow[6]==10) ? "OK" : "WRONG");
+
+    // Comparisons
+    $display("x10 (SLT)        = %0d   (expect 1)           | %s", regfile_shadow[10], (regfile_shadow[10]==1) ? "OK" : "WRONG");
+    $display("x11 (SLTU)       = %0d   (expect 0)           | %s", regfile_shadow[11], (regfile_shadow[11]==0) ? "OK" : "WRONG");
+
+    // Branch and jump
+    $display("x15 (BEQ flag)   = %0d   (expect 1)           | %s", regfile_shadow[15], (regfile_shadow[15]==1) ? "OK" : "WRONG");
+    $display("x16 (BEQ taken)  = %0d   (expect 2)           | %s", regfile_shadow[16], (regfile_shadow[16]==2) ? "OK" : "WRONG");
+    $display("x17 (JAL link)   = 0x%h  (expect 0x12345050)  | %s", regfile_shadow[17], (regfile_shadow[17]==32'h12345050) ? "OK" : "WRONG");
+
+    // Extended instructions
+    $display("x19 (after JAL)  = %0d   (expect 77)          | %s", regfile_shadow[19], (regfile_shadow[19]==77) ? "OK" : "WRONG");
+    $display("x20 (new LUI)    = 0x%h  (expect 0xABCDE000)  | %s", regfile_shadow[20], (regfile_shadow[20]==32'hABCDE000) ? "OK" : "WRONG");
+    $display("x21 (SRA x3>>x2) = 0x%h  (expected ~0x0)       | %s", regfile_shadow[21], (regfile_shadow[21]==(20>>10)) ? "OK" : "WRONG");
+    $display("x22 (ADD x20+x21)= 0x%h  (expect x20+x21)      | %s", regfile_shadow[22], ((regfile_shadow[22]==(regfile_shadow[20]+regfile_shadow[21]))) ? "OK" : "WRONG");
+    $display("x23 (SUB x21-x22)= 0x%h  (expect x21-x22)      | %s", regfile_shadow[23], ((regfile_shadow[23]==(regfile_shadow[21]-regfile_shadow[22]))) ? "OK" : "WRONG");
+    $display("x24 (SLTU)       = %0d   (expect 0)            | %s", regfile_shadow[24], (regfile_shadow[24]==0) ? "OK" : "WRONG");
+    $display("x25 (AND x22,x23)= 0x%h  (expect x22&x23)      | %s", regfile_shadow[25], ((regfile_shadow[25]==(regfile_shadow[22]&regfile_shadow[23]))) ? "OK" : "WRONG");
+    $display("x26 (OR x24,x25) = 0x%h  (expect x24|x25)      | %s", regfile_shadow[26], ((regfile_shadow[26]==(regfile_shadow[24]|regfile_shadow[25]))) ? "OK" : "WRONG");
+    $display("x27 (XOR x26,x21)= 0x%h  (expect x26^x21)      | %s", regfile_shadow[27], ((regfile_shadow[27]==(regfile_shadow[26]^regfile_shadow[21]))) ? "OK" : "WRONG");
+    $display("x28 (SLT x27,x22)= %0d   (expect x27<x22?1:0) | %s", regfile_shadow[28], ((regfile_shadow[28]==((regfile_shadow[27]<regfile_shadow[22]) ? 1:0))) ? "OK" : "WRONG");
+
 
     $display("\n=== TEST COMPLETE ===");
     $finish;
 end
 
-initial begin
-    #21;
-    $display("DEBUG_AFTER_RESET: ctrl.sel_mem_addr=%b | ctrl.sel_result=%b | pc_reg=%h | mux4_output=%h", riscv_mc_inst.controller.sel_mem_addr, riscv_mc_inst.controller.sel_result, riscv_mc_inst.pc_reg, riscv_mc_inst.mux4_output);
-end
-
+// Track register writes
 always @(posedge clk) begin
-    $display("Time=%0t | PC=%h | INSTR=%h | RD1=%h | RD2 = %h| we_ir=%b | we_pc=%b | State=%h", 
-             $time, 
-             riscv_mc_inst.pc_reg, 
-             riscv_mc_inst.instr_reg, 
-             riscv_mc_inst.rd1_reg,
-             riscv_mc_inst.rd2_reg,
-             riscv_mc_inst.we_ir, 
-             riscv_mc_inst.we_pc,
-             riscv_mc_inst.controller.state);
-    $display("           mux1_out=%h | mem_read_data=%h | we_rf=%b | wd3=%h | rd_addr=%0d", 
-             riscv_mc_inst.mux1_output, 
-             riscv_mc_inst.read_data,
-             riscv_mc_inst.we_rf,
-             riscv_mc_inst.mux4_output,
-             riscv_mc_inst.instr_reg[11:7]);
-    $display("           ctrl.sel_mem_addr=%b | ctrl.sel_result=%b | ctrl.sel_alu_src_a=%b | ctrl.sel_alu_src_b=%b | alu_ctrl=%b | alu_out=%h", 
-             riscv_mc_inst.controller.sel_mem_addr,
-             riscv_mc_inst.controller.sel_result,
-             riscv_mc_inst.controller.sel_alu_src_a,
-             riscv_mc_inst.controller.sel_alu_src_b,
-             riscv_mc_inst.alu_control,
-             riscv_mc_inst.alu_output);
+    if (riscv_mc_inst.we_rf) begin
+        regfile_shadow[riscv_mc_inst.instr_reg[11:7]] <= riscv_mc_inst.mux4_output;
+    end
 end
 
+// Optional: print memory contents at start
 initial begin
-    #30;  // After reset
+    #30;
     $display("\n=== MEMORY CONTENTS (first 10 words) ===");
-    for (integer i = 0; i < 10; i = i + 1) begin
+    for (i = 0; i < 10; i = i + 1) begin
         $display("MEM[%0d] = 0x%h", i, riscv_mc_inst.MEM.RAM[i]);
     end
 end
 
+// Timeout
 initial begin
     #10000;
     $display("ERROR: Simulation timeout!");
