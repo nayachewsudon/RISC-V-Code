@@ -1,8 +1,6 @@
 module fsm(
     input clk,
-    input [6:0] op, 
-    //funct3 and funct7 are in alu decoder
-    //reset
+    input [6:0] op,
     input reset_n,
     output reg [3:0] state,
     output reg [1:0] sel_result,
@@ -30,62 +28,74 @@ module fsm(
     parameter EXE_I = 9; 
     parameter JAL = 10;
     parameter LUI = 11; 
-    reg [3:0] next; //TODO: check if i have to initiate
+    reg [3:0] next;
+
+    always @(posedge clk or negedge reset_n) begin
+        if (!reset_n) 
+            state <= FETCH; 
+        else 
+            state <= next; 
+    end
 
     always@(*) begin
         next = state;
-        //TODO: initialize all variables as 0
         we_ir = 0; 
         we_mem = 0;
         we_rf = 0;
         branch = 0;
+        sel_result = 0; 
+        sel_alu_src_b = 0; 
+        sel_alu_src_a = 0;
+        sel_mem_addr = 0;
+        alu_op = 0; 
+        pc_update = 0; 
 
         case (state) 
         FETCH: begin
             next = DECODE;
             sel_mem_addr = 0; 
-            we_ir = 1; //TODO: check
-            sel_alu_src_a = 00; 
-            sel_alu_src_b = 10; 
-            alu_op = 00; 
-            sel_result = 10; 
-            pc_update = 1; //TODO: check
+            we_ir = 1; 
+            sel_alu_src_a = 2'b00; 
+            sel_alu_src_b = 2'b10; 
+            alu_op = 2'b00; 
+            sel_result = 2'b10; 
+            pc_update = 1;
         end
         DECODE: begin
-            if (op == 0000011 || op == 0100011) next = EXE_ADDR; 
-            if (op == 0110011) next = EXE_R; 
-            if (op == 0010011) next = EXE_I; 
-            if (op == 1101111) next = JAL;
-            if (op == 1100011) next = BEQ;
+            if (op == 7'b0000011 || op == 7'b0100011) next = EXE_ADDR; 
+            if (op == 7'b0110011) next = EXE_R; 
+            if (op == 7'b0010011) next = EXE_I; 
+            if (op == 7'b1101111) next = JAL;
+            if (op == 7'b1100011) next = BEQ;
             //--ADDED NEW STATE LUI--
-            if(op == 0110111) next = LUI;
+            if(op == 7'b0110111) next = LUI;
         end
 
         EXE_ADDR: begin
-            sel_alu_src_a = 10;
-            sel_alu_src_b = 01; 
-            alu_op = 00;
+            sel_alu_src_a = 2'b10;
+            sel_alu_src_b = 2'b01; 
+            alu_op = 2'b00;
 
-            if (op == 0000011) next = MEM_RD;
-            if (op == 0100011) next= MEM_WRITE;
+            if (op == 7'b0000011) next = MEM_RD;
+            if (op == 7'b0100011) next= MEM_WRITE;
         end
 
         MEM_RD: begin
-            sel_result = 00; 
+            sel_result = 2'b00; 
             sel_mem_addr = 1;
     
             next = WB_MEM;
         end
 
         WB_MEM: begin
-            sel_result = 01;
+            sel_result = 2'b01;
             we_rf = 1; 
 
             next = FETCH; 
             
         end
         MEM_WRITE: begin
-            sel_result = 00; 
+            sel_result = 2'b00; 
             sel_mem_addr = 1; 
             we_mem = 1;
 
@@ -94,53 +104,53 @@ module fsm(
         end
 
         EXE_R: begin
-            sel_alu_src_a = 10; 
-            sel_alu_src_b = 00;
-            alu_op = 10;
+            sel_alu_src_a = 2'b10; 
+            sel_alu_src_b = 2'b00;
+            alu_op = 2'b10;
 
             next = WB_ALU; 
         end
 
         WB_ALU: begin
-            sel_result = 00; 
+            sel_result = 2'b00; 
             we_rf = 1; 
     
             next = FETCH;
             
         end
         BEQ: begin
-            sel_alu_src_a = 10;
-            sel_alu_src_b = 00;
-            alu_op = 01; 
-            sel_result = 00;
+            sel_alu_src_a = 2'b10;
+            sel_alu_src_b = 2'b00;
+            alu_op = 2'b01; 
+            sel_result = 2'b00;
             branch = 1; 
 
             next = FETCH;
 
         end
         EXE_I: begin
-            sel_alu_src_a = 10; 
-            sel_alu_src_b = 01; 
-            alu_op = 10;
+            sel_alu_src_a = 2'b10; 
+            sel_alu_src_b = 2'b01; 
+            alu_op = 2'b10;
 
             next = WB_ALU; 
             
         end
         JAL: begin
-            sel_alu_src_a = 01; 
-            sel_alu_src_b = 10; 
-            alu_op = 00; 
-            sel_result = 00;
+            sel_alu_src_a = 2'b01; 
+            sel_alu_src_b = 2'b10; 
+            alu_op = 2'b00; 
+            sel_result = 2'b00;
             pc_update = 1; 
 
             next = WB_ALU;
         end
         //--NEW STATE LUI--
         LUI: begin
-            sel_alu_src_a = 01; 
-            sel_alu_src_b = 01; 
-            sel_result = 10; 
-            alu_op = 00; 
+            sel_alu_src_a = 2'b01; 
+            sel_alu_src_b = 2'b01; 
+            sel_result = 2'b10; 
+            alu_op = 2'b00; 
             we_rf = 1;
             next = FETCH; 
         end
