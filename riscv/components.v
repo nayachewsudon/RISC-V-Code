@@ -105,7 +105,7 @@ module register_file(
     input we3 //write enable bit
 );
 
-reg [31:0] Registers [31:0];
+reg [31:0] Registers [63:0];
 integer i; 
 
 assign rd1 = Registers[a1];
@@ -113,7 +113,7 @@ assign rd2 = Registers[a2];
 
 always @ (posedge clk_r or negedge reset_n) begin
     if (!reset_n) begin
-        for (i = 0; i<32; i = i+1) begin
+        for (i = 0; i<64; i = i+1) begin
            Registers[i] <= 32'd0; 
         end
     end
@@ -124,7 +124,7 @@ end
 
 endmodule
 //--------------------------------------------------------------------------------------------
-module mem #(parameter MEM_DEPTH = 32)(
+module mem #(parameter MEM_DEPTH = 1024)(
     input [31:0] addr_memory,
     input [31:0] writedata,
     input we_mem,
@@ -136,12 +136,12 @@ module mem #(parameter MEM_DEPTH = 32)(
 reg [31:0] RAM [0:MEM_DEPTH -1];
 integer i; 
 
-assign read_data = RAM[addr_memory[6:2]];
+assign read_data = RAM[addr_memory[11:2]];
 
 //Active low reset logic - reset active (0) => clear memory + reload from file 
 always @ (posedge clk) begin
     if (we_mem) begin 
-        RAM[addr_memory[6:2]] <= writedata; 
+        RAM[addr_memory[11:2]] <= writedata; 
     end
 end
 
