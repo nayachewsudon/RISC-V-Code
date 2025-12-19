@@ -20,7 +20,7 @@ always @ (*) begin
             1'b1: begin
                 alu_control = 4'b1000; //this is subtraction, beq has to go here
             end
-            default: alu_control = 4'b1111; 
+            default: alu_control = 4'bxxxx; 
             endcase
         end
         3'b001: begin
@@ -43,7 +43,7 @@ always @ (*) begin
             1'b1: begin
                 alu_control = 4'b1101;
             end
-            default: alu_control = 4'b1111; //TODO
+            default: alu_control = 4'bxxxx;
             endcase 
         end
         3'b110: begin
@@ -52,13 +52,13 @@ always @ (*) begin
         3'b111: begin
             alu_control = 4'b0111;
         end
-        default: alu_control = 4'b1111; //TODO
+        default: alu_control = 4'bxxxx;
         endcase
     end
     2'b11: begin
         alu_control = 4'b1000;
     end
-    default: alu_control = 4'b1111;
+    default: alu_control = 4'bxxxx;
     endcase
 end
 
