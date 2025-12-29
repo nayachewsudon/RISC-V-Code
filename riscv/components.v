@@ -22,7 +22,7 @@ module adder ( //TODO:bener kagak?
 ); 
 
 always @(*) begin
-    pc_plus_4 = 4 + pc;
+    pc_plus_4 <= 4 + pc;
 end
 
 endmodule
@@ -43,10 +43,10 @@ module multiplexer (
 
 always @(*) begin
    if (sel) begin 
-        out_m = in_a; 
+        out_m <= in_a; 
     end 
     else begin 
-        out_m = in_b;
+        out_m <= in_b;
     end 
 end
 
@@ -61,16 +61,16 @@ module mux_3to1 (
 always @(*) begin
     case (sel_res)
     2'b00: begin //alu
-        out_m = in_a;
+        out_m <= in_a;
     end
     2'b01: begin //dm
-        out_m = in_b;
+        out_m <= in_b;
     end
     2'b10: begin //pc+4
-        out_m = in_c;
+        out_m <= in_c;
     end
     default: begin
-        out_m = 32'b0;
+        out_m <= 32'b0;
     end
     endcase
 end
@@ -96,11 +96,11 @@ assign rd2 = Registers[a2];
 always @ (posedge clk_r or posedge reset_r) begin
     if (reset_r) begin
         for (i = 0; i<64; i = i+1) begin
-           Registers[i] = 32'd0; 
+           Registers[i] <= 32'd0; 
         end
     end
     else if (we3 && a3 != 0) begin
-        Registers[a3] = wd3;
+        Registers[a3] <= wd3;
     end 
 end
 
