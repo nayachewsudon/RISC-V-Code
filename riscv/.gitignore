@@ -1,0 +1,7 @@
+# Simulation / build artifacts
+*.vcd
+*.vvp
+*.out
+*.log
+*.dump
+*.wlf
