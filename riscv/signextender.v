@@ -1,22 +1,22 @@
 module signextender (
-    input [24:0] A, 
+    input [31:7] A, 
     input [2:0] sel_ext,
     output reg[31:0] out
 );
 
 always @(*) begin
-    case (sel_ext) 
+    case (sel_ext)
     3'b000, 3'b010: //lw, I-type
-        out = {{20{A[24]}}, A[24:13]};
+        out = {{20{A[31]}}, A[31:20]};
     3'b001: //sw
-        out = {{20{A[24]}}, A[24:18], A[4:0]};
-     3'b011: // B-type (beq)
-        out = {{19{A[24]}}, A[24], A[0], A[23:18], A[4:1], 1'b0};
+        out = {{20{A[31]}}, A[31:25], A[11:7]};
+    3'b011: // B-type (beq)
+        out = {{20{A[31]}}, A[7], A[30:25], A[11:8], 1'b0};
     3'b100: // J-type (jal)
-        out = {{11{A[24]}}, A[24], A[12:5], A[13], A[23:14], 1'b0};
+        out = {{12{A[31]}}, A[19:12], A[20], A[30:21], 1'b0};
     3'b101: // U-type (lui)
-        out = {A[24:5], 12'b0};
-    default: out = 32'b0; 
+        out = {A[31:12], 12'b0};
+    default: out = 32'bx;
     endcase
 end
 

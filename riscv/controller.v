@@ -32,7 +32,7 @@ always @ (*) begin
         sel_jump = 0;
         alu_op = 2'b00;
     end
-    7'b0110011: begin
+    7'b0110011: begin //R-Type
         rf_we = 1'b1;
         sel_ext = 3'b111; //default
         sel_alu_src_b = 1'b0;
@@ -64,13 +64,13 @@ always @ (*) begin
     end
     7'b0110111: begin //lui
         rf_we = 1'b1;
-        sel_ext = 3'b101;      
+        sel_ext = 3'b101; 
         sel_alu_src_b = 1'b1;
         dmem_we = 1'b0;
         sel_result = 2'b00;  
         branch = 0;
         sel_jump = 0;         
-        alu_op = 2'b00;
+        alu_op = 2'b00; 
     end
     7'b1101111: begin //jal
         rf_we = 1'b1;
@@ -99,7 +99,7 @@ endmodule
 
 module controller_stagetwo(
     input [2:0] funct3, 
-    input funct7, //ambil bit ke-6 di bagian funct7
+    input funct7, 
     input [1:0] alu_op, 
     output reg [3:0] alu_control
 ); 
@@ -107,7 +107,7 @@ module controller_stagetwo(
 always @ (*) begin
     case (alu_op)
     2'b00: begin
-        alu_control = {3'b000, 1'b0};
+        alu_control = 4'b0000;
     end 
     2'b01, 2'b10: begin
         case (funct3)
