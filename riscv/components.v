@@ -16,7 +16,7 @@ module programcounter (
     end
 endmodule
 //--------------------------------------------------------------------------------------------
-module adder ( //TODO:bener kagak?
+module adder ( 
     input [31:0] pc,
     output reg [31:0] pc_plus_4
 ); 
@@ -132,18 +132,18 @@ module data_memory(
     output [31:0] rd_dm 
 );
 
-reg [31:0] data_memory [31 : 0];
+reg [31:0] Memory [31 : 0];
 integer i;
-assign rd_dm = data_memory[a_dm];
+assign rd_dm = Memory[a_dm];
 
 always @ (posedge clk_dm or posedge reset_dm) begin
     if (reset_dm) begin
         for (i = 0; i < 32; i++) begin
-            data_memory[i] = 32'h00000000;
+            Memory[i] = 32'h00000000;
         end
     end 
     if (we) begin 
-        data_memory[a_dm [6:2]] = wd_dm; 
+        Memory[a_dm [6:2]] = wd_dm; 
     end
 end
 
