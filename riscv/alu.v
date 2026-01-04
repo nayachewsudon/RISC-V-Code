@@ -25,7 +25,7 @@ always @(*) begin
         end
         4'b0011: //sltu 
         begin 
-            rd = {31'b0, a < b};
+            rd = (a < b) ? 32'b1 : 32'b0;
         end
         4'b0100: //xor
         begin
@@ -37,7 +37,7 @@ always @(*) begin
         end
         4'b1101: //sra
         begin 
-            rd = a >>> b[4:0];
+            rd = $signed(a) >>> b[4:0];
         end
         4'b0110: //or
         begin 
@@ -47,7 +47,7 @@ always @(*) begin
         begin 
             rd = a & b;
         end
-        default: rd = 32'b0;
+        default: rd = 32'bx;
     endcase
 end
 

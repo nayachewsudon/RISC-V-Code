@@ -4,7 +4,7 @@ module signextender (
     output reg[31:0] out
 );
 
-always @(*) begin //Tambah B, J, L stlh testbench
+always @(*) begin
     case (sel_ext) 
     3'b000, 3'b010: //lw, I-type
         out = {{20{A[24]}}, A[24:13]};

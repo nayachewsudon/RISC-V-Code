@@ -122,9 +122,15 @@ initial begin
     if ($signed(regfile_shadow[4])==-5) i = i + 1;
     if (regfile_shadow[5]==30) i = i + 1;
     if (regfile_shadow[6]==10) i = i + 1;
+    if (regfile_shadow[7]==30) i = i +1;
+    if (regfile_shadow[8]==1) i = i +1;
+    if ($signed(regfile_shadow[9])==-15);
     if (regfile_shadow[10]==1) i = i + 1;
     if (regfile_shadow[11]==0) i = i + 1;
-    if (regfile_shadow[15]==99) i = i + 1;
+    if (regfile_shadow[12]==32'hFFFFFFEF) i = i + 1;
+    if (regfile_shadow[13]==0) i = i+1; 
+    if (regfile_shadow[14]==30) i = i + 1;
+    if (regfile_shadow[15]==1) i = i + 1;
     if (regfile_shadow[16]==2) i = i + 1;
     if (regfile_shadow[17]==32'h00000050) i = i + 1;
     if (regfile_shadow[19]==0) i = i + 1;
@@ -133,10 +139,11 @@ initial begin
     if (regfile_shadow[22]==32'habcde000) i = i + 1;
     if (regfile_shadow[23]==32'h54322000) i = i + 1;
     if (regfile_shadow[24]==0) i = i + 1;
-    if (regfile_shadow[25]==32'h00322000) i = i + 1;
-    if (regfile_shadow[26]==32'h00322000) i = i + 1;
-    if (regfile_shadow[27]==32'h00322000) i = i + 1;
-    if (regfile_shadow[28]==1) i = i + 1;
+    if (regfile_shadow[25]==32'h00002000) i = i + 1;
+    if (regfile_shadow[26]==32'h00002000) i = i + 1;
+    if (regfile_shadow[27]==32'h00002000) i = i + 1;
+    if (regfile_shadow[28]==0) i = i + 1;
+    
     if (riscv_inst.data_memory.Memory[addr_index]==32'h54322000) i = i + 1;
     
     $display("\n=== Summary ===");
