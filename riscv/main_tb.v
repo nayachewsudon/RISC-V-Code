@@ -5,6 +5,11 @@ module testbench;
 
 reg clk;
 reg reset;
+reg [31:0] x22_after_add; 
+reg [31:0] x22_after_addi;
+reg [31:0] x22_after_lui;
+reg [31:0] x23_after_sub; 
+reg [31:0] x24_after_sltu;
 
 riscv riscv_inst (
     .clk(clk),
@@ -22,11 +27,34 @@ initial begin
     forever #5 clk = ~clk;
 end
 
+//Testbench constants
+localparam ADD_X22_PC= 32'h00000064; 
+localparam LUI_X22_PC = 32'h00000084;
+localparam ADDI_X22_PC = 32'h00000088;
+localparam SUB_X23_PC = 32'h00000068;
+localparam SLTU_X24_PC = 32'h0000006C;
+
 // Track register writes
 always @(posedge clk) begin
     if (!reset) begin
         for (i = 0; i < 32; i = i + 1) begin
             regfile_shadow[i] <= riscv_inst.register_file.Registers[i];
+        end
+
+        if (riscv_inst.programcounter.out_pc == ADD_X22_PC) begin
+            x22_after_add <= regfile_shadow[22];
+        end
+        if (riscv_inst.programcounter.out_pc == ADDI_X22_PC) begin
+            x22_after_addi <= regfile_shadow[22];
+        end
+        if (riscv_inst.programcounter.out_pc == LUI_X22_PC) begin
+            x22_after_lui <= regfile_shadow[22];
+        end
+        if (riscv_inst.programcounter.out_pc == SUB_X23_PC) begin
+            x23_after_sub <= regfile_shadow[23];
+        end
+        if (riscv_inst.programcounter.out_pc == SLTU_X24_PC) begin 
+            x24_after_sltu <= regfile_shadow[24]; 
         end
     end
 end
@@ -66,6 +94,7 @@ initial begin
     end
     
     addr_index = 32'h70 >> 2;
+
         
     $display("\n=== Final Test Results ===");
     $display("=== Basic Instructions ===");
@@ -95,17 +124,17 @@ initial begin
     $display("\n=== Extended Instructions ===");
     $display("x20 (LUI)        = 0x%h  (expect 0xabcde000)  | %s", regfile_shadow[20], (regfile_shadow[20]==32'habcde000) ? "PASS" : "FAIL");
     $display("x21 (SRA)        = 0x%h  (expect 0x00000000)  | %s", regfile_shadow[21], (regfile_shadow[21]==32'h00000000) ? "PASS" : "FAIL");
-    $display("x22 (ADD)        = 0x%h  (expect 0xabcde000)  | %s", regfile_shadow[22], (regfile_shadow[22]==32'habcde000) ? "PASS" : "FAIL");
-    $display("x23 (SUB)        = 0x%h  (expect 0x54322000)  | %s", regfile_shadow[23], (regfile_shadow[23]==32'h54322000) ? "PASS" : "FAIL");
-    $display("x24 (SLTU)       = %0d   (expect 0)           | %s", regfile_shadow[24], (regfile_shadow[24]==0) ? "PASS" : "FAIL");
+    $display("x22 (ADD)        = 0x%h  (expect 0xabcde000)  | %s", x22_after_add, (x22_after_add==32'habcde000) ? "PASS" : "FAIL");
+    $display("x23 (SUB)        = 0x%h  (expect 0x54322000)  | %s", x23_after_sub, (x23_after_sub==32'h54322000) ? "PASS" : "FAIL");
+    $display("x24 (SLTU)       = %0d   (expect 0)           | %s", x24_after_sltu, (x24_after_sltu==0) ? "PASS" : "FAIL");
     $display("x25 (AND)        = 0x%h  (expect 0x00002000)  | %s", regfile_shadow[25], (regfile_shadow[25]==32'h00002000) ? "PASS" : "FAIL");
     $display("x26 (OR)         = 0x%h  (expect 0x00002000)  | %s", regfile_shadow[26], (regfile_shadow[26]==32'h00002000) ? "PASS" : "FAIL");
     $display("x27 (XOR)        = 0x%h  (expect 0x00002000)  | %s", regfile_shadow[27], (regfile_shadow[27]==32'h00002000) ? "PASS" : "FAIL");
     $display("x28 (SLT)        = %0d   (expect 0)           | %s", regfile_shadow[28], (regfile_shadow[28]==0) ? "PASS" : "FAIL");
     
     $display("\n=== Memory Operations ===");
-    $display("x22 (LUI)        = %0h   (expect 0xdeadb000)           | %s", regfile_shadow[22], (regfile_shadow[22]==32'hdeadb000) ? "PASS" : "FAIL");
-    $display("x22 (ADDI x22, x22, -273)        = %0h   (expect 0xdeadaeef)           | %s", regfile_shadow[22], (regfile_shadow[22]==32'hdeadaeef) ? "PASS" : "FAIL");
+    $display("x22 (LUI)        = %0h   (expect 0xdeadb000)           | %s", x22_after_lui, (x22_after_lui==32'hdeadb000) ? "PASS" : "FAIL");
+    $display("x22 (ADDI x22, x22, -273)        = %0h   (expect 0xdeadaeef)           | %s", x22_after_addi, (x22_after_addi==32'hdeadaeef) ? "PASS" : "FAIL");
     $display("x23 (ADDI x23, x0, 0x70)        = %0h   (expect 0x70)           | %s", regfile_shadow[23], (regfile_shadow[23]==32'h70) ? "PASS" : "FAIL");
     $display("Memory[0x70] after SW            = 0x%0h   | %s",
          riscv_inst.data_memory.Memory[addr_index],
@@ -136,13 +165,15 @@ initial begin
     if (regfile_shadow[19]==0) i = i + 1;
     if (regfile_shadow[20]==32'habcde000) i = i + 1;
     if (regfile_shadow[21]==32'h00000000) i = i + 1;
-    if (regfile_shadow[22]==32'habcde000) i = i + 1;
+    if (x22_after_add==32'habcde000) i = i + 1;
     if (regfile_shadow[23]==32'h54322000) i = i + 1;
-    if (regfile_shadow[24]==0) i = i + 1;
+    if (x24_after_sltu==0) i = i + 1;
     if (regfile_shadow[25]==32'h00002000) i = i + 1;
     if (regfile_shadow[26]==32'h00002000) i = i + 1;
     if (regfile_shadow[27]==32'h00002000) i = i + 1;
     if (regfile_shadow[28]==0) i = i + 1;
+    if (x22_after_lui==32'hdeadb000) i = i + 1;
+    if (x22_after_addi == 32'hdeadaeef) i = i + 1;
     
     if (riscv_inst.data_memory.Memory[addr_index]==32'h54322000) i = i + 1;
     
