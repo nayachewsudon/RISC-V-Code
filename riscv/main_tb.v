@@ -174,6 +174,7 @@ initial begin
     if (regfile_shadow[28]==0) i = i + 1;
     if (x22_after_lui==32'hdeadb000) i = i + 1;
     if (x22_after_addi == 32'hdeadaeef) i = i + 1;
+    if (regfile_shadow[23] == 32'h00000070) i = i +1;
     
     if (riscv_inst.data_memory.Memory[addr_index]==32'h54322000) i = i + 1;
     
