@@ -12,7 +12,7 @@ module controller_stageone(
 
 always @ (*) begin
     case (op)
-    7'b0000011: begin
+    7'b0000011: begin //lw
         rf_we = 1'b1;
         sel_ext = 3'b000;
         sel_alu_src_b = 1'b1;
@@ -22,7 +22,7 @@ always @ (*) begin
         sel_jump = 0;
         alu_op = 2'b00;
     end
-    7'b0100011: begin
+    7'b0100011: begin //sw
         rf_we = 1'b0;
         sel_ext = 3'b001;
         sel_alu_src_b = 1'b1;

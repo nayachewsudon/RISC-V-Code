@@ -134,7 +134,7 @@ module data_memory(
 
 reg [31:0] Memory [31 : 0];
 integer i;
-assign rd_dm = Memory[a_dm];
+assign rd_dm = Memory[a_dm >> 2];
 
 always @ (posedge clk_dm or posedge reset_dm) begin
     if (reset_dm) begin
