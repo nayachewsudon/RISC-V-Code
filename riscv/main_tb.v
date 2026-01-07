@@ -10,6 +10,7 @@ reg [31:0] x22_after_addi;
 reg [31:0] x22_after_lui;
 reg [31:0] x23_after_sub; 
 reg [31:0] x24_after_sltu;
+reg [31:0] x17_after_first_jal;
 
 riscv riscv_inst (
     .clk(clk),
@@ -33,6 +34,7 @@ localparam LUI_X22_PC = 32'h00000084;
 localparam ADDI_X22_PC = 32'h00000088;
 localparam SUB_X23_PC = 32'h00000068;
 localparam SLTU_X24_PC = 32'h0000006C;
+localparam JAL_X17_PC = 32'h00000058;
 
 // Track register writes
 always @(posedge clk) begin
@@ -55,6 +57,9 @@ always @(posedge clk) begin
         end
         if (riscv_inst.PROGRAMCOUNTER.updated_pc == SLTU_X24_PC) begin 
             x24_after_sltu <= regfile_shadow[24]; 
+        end
+         if (riscv_inst.PROGRAMCOUNTER.updated_pc == JAL_X17_PC) begin
+            x17_after_first_jal <= riscv_inst.RF.Registers[17];
         end
     end
 end
@@ -94,7 +99,6 @@ initial begin
     end
     
     addr_index = 32'h70 >> 2;
-
         
     $display("\n=== Final Test Results ===");
     $display("=== Basic Instructions ===");
@@ -118,7 +122,7 @@ initial begin
     $display("\n=== Branch and Jump ===");
     $display("x15 (BEQ flag)   = %0d   (expect 1)          | %s", regfile_shadow[15], (regfile_shadow[15]==1) ? "PASS" : "FAIL");
     $display("x16 (BEQ taken)  = %0d   (expect 2)           | %s", regfile_shadow[16], (regfile_shadow[16]==2) ? "PASS" : "FAIL");
-    $display("x17 (JAL link)   = 0x%h  (expect 0x00000050)  | %s", regfile_shadow[17], (regfile_shadow[17]==32'h00000050) ? "PASS" : "FAIL");
+    $display("x17 (JAL link)   = 0x%h  (expect 0x00000050)  | %s", x17_after_first_jal, (x17_after_first_jal==32'h00000050) ? "PASS" : "FAIL");
     $display("x19 (after JAL)  = %0d   (expect 0)           | %s", regfile_shadow[19], (regfile_shadow[19]==0) ? "PASS" : "FAIL");
     
     $display("\n=== Extended Instructions ===");
@@ -161,7 +165,7 @@ initial begin
     if (regfile_shadow[14]==30) i = i + 1;
     if (regfile_shadow[15]==1) i = i + 1;
     if (regfile_shadow[16]==2) i = i + 1;
-    if (regfile_shadow[17]==32'h00000050) i = i + 1;
+    if (x17_after_first_jal==32'h00000050) i = i + 1;
     if (regfile_shadow[19]==0) i = i + 1;
     if (regfile_shadow[20]==32'habcde000) i = i + 1;
     if (regfile_shadow[21]==32'h00000000) i = i + 1;
@@ -195,6 +199,39 @@ initial begin
     #10000;
     $display("\nERROR: Simulation timeout!");
     $finish;
+end
+
+// In your testbench, add this check
+always @(posedge clk) begin
+    if (riscv_inst.PROGRAMCOUNTER.updated_pc >= 32'h9C) begin
+        #100;  // Wait a bit
+        // Then print results and finish
+    end
+end
+
+always @(posedge clk) begin
+    if (riscv_inst.PROGRAMCOUNTER.updated_pc == 32'h4C && riscv_inst.STAGEONE_CONTROLLER.sel_jump == 1) begin
+        $display("FIRST JAL: PC=%h, pc_p4=%h, mux_two=%h, x17_will_be=%h", 
+                 riscv_inst.PROGRAMCOUNTER.updated_pc,
+                 riscv_inst.ADDER.pc_plus_4,
+                 riscv_inst.WRITEBACK_MULTIPLEXER.out_m,
+                 riscv_inst.RF.Registers[17]);
+    end
+end
+
+initial begin
+    $monitor("PC=%h, sel_pc=%b, branch=%b, zero_flag=%b, sel_jump=%b, pc_p_imm=%h, pc_p4=%h, se_out=%h", 
+          riscv_inst.PROGRAMCOUNTER.updated_pc, riscv_inst.BRANCH_JUMP_MULTIPLEXER.sel, riscv_inst.STAGEONE_CONTROLLER.branch, riscv_inst.ALU.zero_flag, 
+          riscv_inst.STAGEONE_CONTROLLER.sel_jump, riscv_inst.PC_IMM_ADDER.sum, riscv_inst.ADDER.pc_plus_4, riscv_inst.SIGNEXTENDER.out);
+
+end
+
+always @(posedge clk) begin
+    if (riscv_inst.PROGRAMCOUNTER.updated_pc == 32'h58) begin
+        $display("After JAL: PC=%h, x17=%h (expect 0x50)", 
+                 riscv_inst.PROGRAMCOUNTER.updated_pc,
+                 riscv_inst.RF.Registers[17]);
+    end
 end
 
 endmodule

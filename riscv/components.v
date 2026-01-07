@@ -4,7 +4,7 @@ module programcounter (
     input reset,
     output reg [31:0] updated_pc
 );
-    always @ (posedge clk or posedge reset) begin 
+    always @ (posedge clk) begin 
      
         if (reset) begin
             updated_pc <= 32'b0;//reset value
