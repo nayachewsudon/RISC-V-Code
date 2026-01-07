@@ -42,7 +42,7 @@ module plr2(
     output reg E_we_rf, 
     output reg [31:0] E_rf_rd1, 
     output reg [31:0] E_rf_rd2, 
-    output reg [31:0] E_rf_a3, 
+    output reg [11:7] E_rf_a3, 
     output reg [31:0] E_ext, 
     output reg [31:0] E_PC, 
     output reg [31:0] E_PC_P4,
@@ -75,14 +75,14 @@ module plr3(
     input E_we_rf, 
     input [31:0] E_alu_o, 
     input [31:0] E_dm_wd, 
-    input [31:0] E_rf_a3,
+    input [11:7] E_rf_a3,
     input [31:0] E_PC_P4,
     output reg [1:0] M_sel_result, 
     output reg M_we_dm, 
     output reg M_we_rf, 
     output reg [31:0] M_alu_o,
     output reg [31:0] M_dm_wd,
-    output reg [31:0] M_rf_a3,
+    output reg [11:7] M_rf_a3,
     output reg [31:0] M_PC_P4
 ); 
 
@@ -104,13 +104,13 @@ module plr4(
     input M_we_rf, 
     input [31:0] M_alu_o, 
     input [31:0] M_dm_rd, //connected to data memory 
-    input [31:0] M_rf_a3, 
+    input [11:7] M_rf_a3, 
     input [31:0] M_PC_P4,
     output reg [1:0] W_sel_result,
     output reg W_we_rf, 
     output reg [31:0] W_alu_o, 
     output reg [31:0] W_dm_rd,
-    output reg [31:0] W_rf_a3, 
+    output reg [11:7] W_rf_a3, 
     output reg [31:0] W_PC_P4
 ); 
 

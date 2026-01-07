@@ -27,7 +27,7 @@ programcounter PROGRAMCOUNTER (
 wire [31:0] F_PC_P4; 
 
 adder ADDER (
-    .pc(updated_pc),
+    .pc(F_PC),
     .pc_plus_4(F_PC_P4)
 );
 
@@ -77,10 +77,10 @@ register_file RF (
     .a1(D_instr[19:15]),
     .a2(D_instr[24:20]),
     .a3(W_rf_a3), //from the writeback stage
-    .wd3(mux_two),
+    .wd3(W_result),
     .rd1(D_rf_rd1),
     .rd2(D_rf_rd2),
-    .we3(W_result) //also from the writeback stage (previously mux_two )
+    .we3(W_we_rf)
 );
 
 //--Stage one controller--
@@ -137,7 +137,7 @@ signextender SIGNEXTENDER(
     wire E_we_rf;
     wire [31:0] E_rf_rd1; 
     wire [31:0] E_rf_rd2; 
-    wire [31:0] E_rf_a3; 
+    wire [11:7] E_rf_a3; 
     wire [31:0] E_ext; 
     wire [31:0] E_PC; 
     wire [31:0] E_PC_P4;
@@ -147,11 +147,9 @@ plr2 PLR2(
     .D_jump(D_jump),
     .D_branch(D_branch),
     .D_sel_result(D_sel_result),
-    .D_sel_result(D_sel_result),
     .D_we_dm(D_we_dm),
     .D_alu_control(D_alu_control),
     .D_sel_alu_src_b(D_sel_alu_src_b),
-    .D_we_dm(D_we_dm),
     .D_we_rf(D_we_rf),
     .D_rf_rd1(D_rf_rd1),
     .D_rf_rd2(D_rf_rd2),
@@ -217,7 +215,7 @@ wire E_zero;
 alu ALU(
     .a(srcA),
     .b(srcB),
-    .alu_controller(alu_control),
+    .alu_controller(E_alu_control),
     .rd(E_alu_o),
     .zero_flag(E_zero)
 );
@@ -227,8 +225,9 @@ alu ALU(
     wire M_we_dm;
     wire M_we_rf;
     wire [31:0] M_alu_o;
-    wire [31:0] M_rf_a3;
+    wire [11:7] M_rf_a3;
     wire [31:0] M_PC_P4;
+    wire [31:0] M_dm_wd;
 
     plr3 PLR3(
         .clk(clk),
@@ -268,17 +267,17 @@ wire [1:0] W_sel_result;
 wire W_we_rf;
 wire [31:0] W_alu_o;
 wire [31:0] W_dm_rd;
-wire [31:0] W_rf_a3; 
+wire [11:7] W_rf_a3; 
 wire [31:0] W_PC_P4;
 
-pl4 PL4(
+plr4 PLR4(
     .clk(clk),
     .M_sel_result(M_sel_result),
     .M_we_dm(M_we_dm),
     .M_we_rf(M_we_rf),
     .M_alu_o(M_alu_o),
     .M_dm_rd(M_dm_rd),
-    .M_rf_a3(M_rf_a3)
+    .M_rf_a3(M_rf_a3),
     .M_PC_P4(M_PC_P4),
     .W_sel_result(W_sel_result),
     .W_we_rf(W_we_rf),
