@@ -72,13 +72,13 @@ register_file RF (
 );
 
 //--Mux 1--
-wire  [31:0] mux_one;
+wire  [31:0] srcB;
 
 multiplexer SE_RD2_MUX (
     .in_a(se_out),
     .in_b(rf_rd2), 
     .sel(sel_alu_src_b),
-    .out_m(mux_one)
+    .out_m(srcB)
 );
 
 //--Data Memory--
@@ -112,6 +112,7 @@ wire rf_we;
 wire branch;             
 wire sel_jump;          
 wire [1:0] alu_op;
+wire sel_alu_src_a;
 
 controller_stageone STAGEONE_CONTROLLER(
     .op(rd_im_output[6:0]),
@@ -122,7 +123,8 @@ controller_stageone STAGEONE_CONTROLLER(
     .rf_we(rf_we),
     .branch(branch),        
     .sel_jump(sel_jump),  
-    .alu_op(alu_op)
+    .alu_op(alu_op),
+    .sel_alu_src_a(sel_alu_src_a)
 );
 
 //--Controller stage 2--
@@ -148,11 +150,22 @@ signextender SIGNEXTENDER(
 wire [31:0] alu_output;
 wire zero_flag; 
 alu ALU(
-    .a(rf_rd1),
-    .b(mux_one),
+    .a(srcA),
+    .b(srcB),
     .alu_controller(alu_control),
     .rd(alu_output),
     .zero_flag(zero_flag)
+);
+
+//--SrcA Mux--
+wire [31:0] input_zero = 32'b0;
+wire [31:0] srcA; 
+
+multiplexer ALU_SRCA_MUX(
+    .in_a(input_zero),
+    .in_b(rf_rd1),
+    .sel(sel_alu_src_a),
+    .out_m(srcA)
 );
 
 endmodule
