@@ -13,7 +13,7 @@ reg [31:0] x24_after_sltu;
 
 riscv riscv_inst (
     .clk(clk),
-    .reset(reset)
+    .rst_n(reset)
 );
 
 // Shadow register file for tracking
@@ -38,22 +38,22 @@ localparam SLTU_X24_PC = 32'h0000006C;
 always @(posedge clk) begin
     if (!reset) begin
         for (i = 0; i < 32; i = i + 1) begin
-            regfile_shadow[i] <= riscv_inst.register_file.Registers[i];
+            regfile_shadow[i] <= riscv_inst.RF.Registers[i];
         end
 
-        if (riscv_inst.programcounter.out_pc == ADD_X22_PC) begin
+        if (riscv_inst.PROGRAMCOUNTER.updated_pc == ADD_X22_PC) begin
             x22_after_add <= regfile_shadow[22];
         end
-        if (riscv_inst.programcounter.out_pc == ADDI_X22_PC) begin
+        if (riscv_inst.PROGRAMCOUNTER.updated_pc == ADDI_X22_PC) begin
             x22_after_addi <= regfile_shadow[22];
         end
-        if (riscv_inst.programcounter.out_pc == LUI_X22_PC) begin
+        if (riscv_inst.PROGRAMCOUNTER.updated_pc == LUI_X22_PC) begin
             x22_after_lui <= regfile_shadow[22];
         end
-        if (riscv_inst.programcounter.out_pc == SUB_X23_PC) begin
+        if (riscv_inst.PROGRAMCOUNTER.updated_pc == SUB_X23_PC) begin
             x23_after_sub <= regfile_shadow[23];
         end
-        if (riscv_inst.programcounter.out_pc == SLTU_X24_PC) begin 
+        if (riscv_inst.PROGRAMCOUNTER.updated_pc == SLTU_X24_PC) begin 
             x24_after_sltu <= regfile_shadow[24]; 
         end
     end
@@ -61,12 +61,12 @@ end
 
 // Initialize memory with test.hex
 initial begin
-    $readmemh("test.hex", riscv_inst.instruction_memory.Memory);
+    $readmemh("test.hex", riscv_inst.IMEM.RAM);
     
     // Pre-initialize data memory location 0x70 if needed
     // Adjust based on your data memory implementation
     #1
-    riscv_inst.data_memory.Memory[32'h70 >> 2] = 32'hDEADBEEF;
+    riscv_inst.DMEM.Memory[32'h70 >> 2] = 32'hDEADBEEF;
 end
 
 // Waveform dump
@@ -80,17 +80,17 @@ initial begin
     reset = 0;
     
     $display("=== Instruction Memory Check ===");
-    $display("Memory[0] = 0x%h (expect 0x123450b7)", riscv_inst.instruction_memory.Memory[0]);
-    $display("Memory[1] = 0x%h (expect 0x00a00113)", riscv_inst.instruction_memory.Memory[1]);
-    $display("Memory[2] = 0x%h (expect 0x01400193)", riscv_inst.instruction_memory.Memory[2]);
-    $display("Memory[3] = 0x%h (expect 0xffb00213)", riscv_inst.instruction_memory.Memory[3]);
+    $display("Memory[0] = 0x%h (expect 0x123450b7)", riscv_inst.IMEM.RAM[0]);
+    $display("Memory[1] = 0x%h (expect 0x00a00113)", riscv_inst.IMEM.RAM[1]);
+    $display("Memory[2] = 0x%h (expect 0x01400193)", riscv_inst.IMEM.RAM[2]);
+    $display("Memory[3] = 0x%h (expect 0xffb00213)", riscv_inst.IMEM.RAM[3]);
 
     // Run for sufficient cycles
     #3000;
     
     // Update shadow registers one final time
     for (i = 0; i < 32; i = i + 1) begin
-        regfile_shadow[i] = riscv_inst.register_file.Registers[i];
+        regfile_shadow[i] = riscv_inst.RF.Registers[i];
     end
     
     addr_index = 32'h70 >> 2;
@@ -137,8 +137,8 @@ initial begin
     $display("x22 (ADDI x22, x22, -273)        = %0h   (expect 0xdeadaeef)           | %s", x22_after_addi, (x22_after_addi==32'hdeadaeef) ? "PASS" : "FAIL");
     $display("x23 (ADDI x23, x0, 0x70)        = %0h   (expect 0x70)           | %s", regfile_shadow[23], (regfile_shadow[23]==32'h70) ? "PASS" : "FAIL");
     $display("Memory[0x70] after SW            = 0x%0h   | %s",
-         riscv_inst.data_memory.Memory[addr_index],
-         (riscv_inst.data_memory.Memory[addr_index] == 32'h70) ? "PASS" : "FAIL");
+         riscv_inst.DMEM.Memory[addr_index],
+         (riscv_inst.DMEM.Memory[addr_index] == 32'h70) ? "PASS" : "FAIL");
     $display("x24 (LW 0(x23))                  = 0x%0h   | %s",
          regfile_shadow[24],
          (regfile_shadow[24] == 32'h70) ? "PASS" : "FAIL");
@@ -175,14 +175,14 @@ initial begin
     if (x22_after_lui==32'hdeadb000) i = i + 1;
     if (x22_after_addi == 32'hdeadaeef) i = i + 1;
     if (regfile_shadow[23] == 32'h00000070) i = i +1;
-    
-    if (riscv_inst.data_memory.Memory[addr_index]==32'h54322000) i = i + 1;
-    
+    if (riscv_inst.DMEM.Memory[addr_index] == 32'h70) i = i + 1;
+    if (regfile_shadow[24] == 32'h70) i = i + 1;
+
     $display("\n=== Summary ===");
-    $display("Tests Passed: %0d/22", i);
-    $display("Tests Failed: %0d/22", 22-i);
+    $display("Tests Passed: %0d/32", i);
+    $display("Tests Failed: %0d/32", 32-i);
     
-    if (i == 22) begin
+    if (i == 32) begin
         $display("\n*** ALL TESTS PASSED! ***");
     end else begin
         $display("\n*** SOME TESTS FAILED - CHECK YOUR IMPLEMENTATION ***");

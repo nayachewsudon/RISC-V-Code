@@ -3,27 +3,25 @@
 `include "signextender.v"
 `include "alu.v"
 
-//fungsi: gabungin bagian2 risc-v dalam 1 module
-
 module riscv(
     input clk, 
-    input reset
+    input rst_n
 );
 
-//--Adder--
-wire [31:0] adder_output;
+//--Adder adding PC + 4--
+wire [31:0] pc_p4; 
 
-adder adder (
-    .pc(instruction_output),
-    .pc_plus_4(adder_output)
+adder ADDER (
+    .pc(updated_pc),
+    .pc_plus_4(pc_p4)
 );
 
 //--PC + imm adder--
-wire [31:0] sum; 
-adder_general adder_general(
-    .a(instruction_output),
+wire [31:0] pc_p_imm; 
+adder_general PC_IMM_ADDER(
+    .a(updated_pc),
     .b(se_out),
-    .sum(sum)
+    .sum(pc_p_imm)
 );
 
 //--Branch/Jump Logic--             
@@ -32,53 +30,53 @@ assign sel_pc = (branch & zero_flag) | sel_jump;
 
 //--Mux for that logic--
 wire [31:0] mux_logic;
-multiplexer multiplexer_3(
-    .in_a(sum),
-    .in_b(adder_output),
+multiplexer BRANCH_JUMP_MULTIPLEXER(
+    .in_a(pc_p_imm), //from pc + imm adder
+    .in_b(pc_p4), //from adder of pc + 4
     .sel(sel_pc),
     .out_m(mux_logic)
 );
 
 //--PC--
-wire [31:0] instruction_output;
+wire [31:0] updated_pc;
 
-programcounter programcounter (
-    .clk_pc(clk),
-    .reset_pc(reset),
-    .in_pc(mux_logic),
-    .out_pc(instruction_output)
+programcounter PROGRAMCOUNTER (
+    .clk(clk),
+    .reset(rst_n),
+    .input_pc(mux_logic),
+    .updated_pc(updated_pc)
 );
 
 //--Instruction Memory--
 wire [31:0] rd_im_output;
 
-instruction_memory instruction_memory (
-    .a_im(instruction_output),
+instruction_memory IMEM (
+    .a_im(updated_pc),
     .rd_im(rd_im_output)
 );
 
 //--Register File--
-wire [31:0] rd1_rf;
-wire [31:0] rd2_rf;
+wire [31:0] rf_rd1;
+wire [31:0] rf_rd2;
 
-register_file register_file (
+register_file RF (
     .clk_r(clk),
-    .reset_r(reset),
+    .reset_r(rst_n),
     .a1(rd_im_output[19:15]),
     .a2(rd_im_output[24:20]),
     .a3(rd_im_output[11:7]),
     .wd3(mux_two),
-    .rd1(rd1_rf),
-    .rd2(rd2_rf),
+    .rd1(rf_rd1),
+    .rd2(rf_rd2),
     .we3(rf_we) 
 );
 
 //--Mux 1--
 wire  [31:0] mux_one;
 
-multiplexer multiplexer1 (
+multiplexer SE_RD2_MUX (
     .in_a(se_out),
-    .in_b(rd2_rf), 
+    .in_b(rf_rd2), 
     .sel(sel_alu_src_b),
     .out_m(mux_one)
 );
@@ -86,26 +84,26 @@ multiplexer multiplexer1 (
 //--Data Memory--
 wire [31:0] rd_dm;
 
-data_memory data_memory(
+data_memory DMEM(
     .a_dm(alu_output),
-    .clk_dm(clk),
-    .reset_dm(reset),
-    .wd_dm(rd2_rf),
+    .clk(clk),
+    .reset(rst_n),
+    .wd_dm(rf_rd2),
     .we(dmem_we),
     .rd_dm(rd_dm)
 );
 
-//--Mux 2--
+//--Mux 2 (Writeback multiplexer)--
 wire [31:0] mux_two;
-mux_3to1 multiplexer2(
+mux_3to1 WRITEBACK_MULTIPLEXER(
     .in_a(alu_output),
     .in_b(rd_dm),
-    .in_c(adder_output),
+    .in_c(pc_p4),
     .sel_res(sel_result),
     .out_m(mux_two)
 );
 
-//--Controller (bagian pertama)--
+//--Stage one controller--
 wire [1:0] sel_result; 
 wire dmem_we; 
 wire sel_alu_src_b;
@@ -115,7 +113,7 @@ wire branch;
 wire sel_jump;          
 wire [1:0] alu_op;
 
-controller_stageone controller_stageone(
+controller_stageone STAGEONE_CONTROLLER(
     .op(rd_im_output[6:0]),
     .sel_result(sel_result),
     .dmem_we(dmem_we),
@@ -127,12 +125,12 @@ controller_stageone controller_stageone(
     .alu_op(alu_op)
 );
 
-//--Controller (bagian kedua)--
+//--Controller stage 2--
 wire [3:0] alu_control;
 
-controller_stagetwo controller_stagetwo(
+controller_stagetwo STAGETWO_CONTROLLER(
     .funct3(rd_im_output[14:12]),
-    .funct7(rd_im_output[30]), //DO NOT CHANGE
+    .funct7(rd_im_output[30]),
     .alu_op(alu_op),
     .alu_control(alu_control)
 );
@@ -140,7 +138,7 @@ controller_stagetwo controller_stagetwo(
 //--Sign Extender --
 wire [31:0] se_out;
 
-signextender signextender(
+signextender SIGNEXTENDER(
     .A(rd_im_output[31:7]),
     .sel_ext(sel_ext),
     .out(se_out)
@@ -149,8 +147,8 @@ signextender signextender(
 //--ALU--
 wire [31:0] alu_output;
 wire zero_flag; 
-alu alu(
-    .a(rd1_rf),
+alu ALU(
+    .a(rf_rd1),
     .b(mux_one),
     .alu_controller(alu_control),
     .rd(alu_output),

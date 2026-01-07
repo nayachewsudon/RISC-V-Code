@@ -1,16 +1,16 @@
 module programcounter (
-    input [31:0] in_pc,
-    input clk_pc,
-    input reset_pc,
-    output reg [31:0] out_pc
+    input [31:0] input_pc,
+    input clk,
+    input reset,
+    output reg [31:0] updated_pc
 );
-    always @ (posedge clk_pc or posedge reset_pc) begin 
+    always @ (posedge clk or posedge reset) begin 
      
-        if (reset_pc) begin
-            out_pc <= 32'b0;//reset value
+        if (reset) begin
+            updated_pc <= 32'b0;//reset value
         end
         else begin
-            out_pc <= in_pc;
+            updated_pc <= input_pc;
         end
     
     end
@@ -70,7 +70,7 @@ always @(*) begin
         out_m <= in_c;
     end
     default: begin
-        out_m <= 32'b0;
+        out_m <= 32'bx;
     end
     endcase
 end
@@ -111,22 +111,22 @@ module instruction_memory (
     output [31:0] rd_im
 );
 
-reg [31:0] Memory [63:0]; // initialize memory storage
+reg [31:0] RAM [63:0]; // initialize memory storage
 integer i; 
 
 //Initialize memory (to help testing)
 initial begin
-    $readmemh("test.hex", Memory);
+    $readmemh("test.hex", RAM);
 end
 
-assign rd_im = Memory[a_im[7:2]];
+assign rd_im = RAM[a_im[7:2]];
 
 endmodule
 
 //--------------------------------------------------------------------------------------------
 module data_memory( 
     input [31:0] a_dm, //read instruction
-    input clk_dm, reset_dm,
+    input clk, reset,
     input [31:0] wd_dm, //data to write
     input we,
     output [31:0] rd_dm 
@@ -136,8 +136,8 @@ reg [31:0] Memory [31 : 0];
 integer i;
 assign rd_dm = Memory[a_dm >> 2];
 
-always @ (posedge clk_dm or posedge reset_dm) begin
-    if (reset_dm) begin
+always @ (posedge clk or posedge reset) begin
+    if (reset) begin
         for (i = 0; i < 32; i++) begin
             Memory[i] = 32'h00000000;
         end
