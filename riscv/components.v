@@ -136,12 +136,7 @@ reg [31:0] Memory [31 : 0];
 integer i;
 assign rd_dm = Memory[a_dm >> 2];
 
-always @ (posedge clk or posedge reset) begin
-    if (reset) begin
-        for (i = 0; i < 32; i++) begin
-            Memory[i] = 32'h00000000;
-        end
-    end 
+always @ (posedge clk) begin
     if (we) begin 
         Memory[a_dm [6:2]] = wd_dm; 
     end

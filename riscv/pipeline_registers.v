@@ -32,6 +32,7 @@ module plr2(
     input [31:0] D_ext, 
     input [31:0] D_PC, //from PLR1
     input [31:0] D_PC_P4,
+    input D_sel_alu_src_a,
     output reg E_jump, 
     output reg E_branch, 
     output reg [1:0] E_sel_result, 
@@ -44,7 +45,8 @@ module plr2(
     output reg [31:0] E_rf_a3, 
     output reg [31:0] E_ext, 
     output reg [31:0] E_PC, 
-    output reg [31:0] E_PC_P4
+    output reg [31:0] E_PC_P4,
+    output reg E_sel_alu_src_a
 ); 
 
 always @ (posedge clk) begin
@@ -61,6 +63,7 @@ always @ (posedge clk) begin
     E_ext <= D_ext; 
     E_PC <= D_PC; 
     E_PC_P4 <= D_PC_P4;
+    E_sel_alu_src_a <= D_sel_alu_src_a;
 end
 
 endmodule
