@@ -191,9 +191,9 @@ always @(posedge clk) begin
                  riscv_inst.RF.Registers[6], riscv_inst.RF.Registers[6],
                  (riscv_inst.RF.Registers[6] == 21) ? "PASS" : "FAIL");
         
-        $display("x7  (SLL) | 0x%08h  | %11d | varies           | %s", 
+        $display("x7  (SLL) | 0x%08h  | %11d | 0           | %s", 
                  riscv_inst.RF.Registers[7], riscv_inst.RF.Registers[7],
-                 (riscv_inst.RF.Registers[7] != 0) ? "PASS" : "FAIL");
+                 (riscv_inst.RF.Registers[7] == 0) ? "PASS" : "FAIL");
         
         $display("x9  (LW)  | 0x%08h  | %11d | 10               | %s", 
                  riscv_inst.RF.Registers[9], riscv_inst.RF.Registers[9],

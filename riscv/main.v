@@ -133,7 +133,7 @@ signextender SIGNEXTENDER(
     wire E_we_dm;
     wire [3:0] E_alu_control; 
     wire E_sel_alu_src_b;
-    wire E_sel_lu_src_a; 
+    wire E_sel_alu_src_a; 
     wire E_we_rf;
     wire [31:0] E_rf_rd1; 
     wire [31:0] E_rf_rd2; 
@@ -171,7 +171,7 @@ plr2 PLR2(
     .E_ext(E_ext),
     .E_PC(E_PC),
     .E_PC_P4(E_PC_P4),
-    .E_sel_alu_src_a(E_alu_src_a) //not in the graph
+    .E_sel_alu_src_a(E_sel_alu_src_a) //not in the graph
 );
 
 //-------------------------------------
