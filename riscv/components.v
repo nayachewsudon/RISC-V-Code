@@ -111,15 +111,15 @@ module instruction_memory (
     output [31:0] rd_im
 );
 
-reg [31:0] RAM [63:0]; // initialize memory storage
+reg [31:0] RAM [255:0]; // initialize memory storage
 integer i; 
 
 //Initialize memory (to help testing)
-initial begin
-    $readmemh("test.hex", RAM);
-end
+//initial begin
+//    $readmemh("independent.hex", RAM);
+//end
 
-assign rd_im = RAM[a_im[7:2]];
+assign rd_im = RAM[a_im[8:2]];
 
 endmodule
 

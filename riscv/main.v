@@ -102,7 +102,7 @@ controller_stageone STAGEONE_CONTROLLER(
     .sel_ext(D_sel_ext),
     .rf_we(D_we_rf),
     .branch(D_branch),        
-    .sel_jump(D_jump),  
+    .sel_jump(D_jump),
     .alu_op(alu_op),
     .sel_alu_src_a(D_sel_alu_src_a)
 );
