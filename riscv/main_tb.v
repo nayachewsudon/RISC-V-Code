@@ -168,9 +168,9 @@ end
 
 
 initial begin
-    $monitor("PC=%h, sel_pc=%b, branch=%b, zero_flag=%b, sel_jump=%b, pc_p_imm=%h, pc_p4=%h, se_out=%h, sel_alu_src_a = %b, sel_alu_src_b = %b", 
+    $monitor("PC=%h, sel_pc=%b, branch=%b, zero_flag=%b, sel_jump=%b, pc_p_imm=%h, pc_p4=%h, se_out=%h, sel_alu_src_a = %b, sel_alu_src_b = %b, SE_RD_MUX.out = %h", 
           riscv_inst.PROGRAMCOUNTER.updated_pc, riscv_inst.BRANCH_JUMP_MULTIPLEXER.sel, riscv_inst.STAGEONE_CONTROLLER.branch, riscv_inst.ALU.zero_flag, 
-          riscv_inst.STAGEONE_CONTROLLER.sel_jump, riscv_inst.PC_IMM_ADDER.sum, riscv_inst.ADDER.pc_plus_4, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_a, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_b, 
+          riscv_inst.STAGEONE_CONTROLLER.sel_jump, riscv_inst.PC_IMM_ADDER.sum, riscv_inst.ADDER.pc_plus_4, riscv_inst.SIGNEXTENDER.out, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_a, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_b, 
           riscv_inst.SE_RD2_MUX.out_m);
 
 end

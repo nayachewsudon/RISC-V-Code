@@ -19,7 +19,7 @@ wire [31:0] F_PC;
 programcounter PROGRAMCOUNTER (
     .clk(clk),
     .reset(rst_n),
-    .input_pc(mux_logic),
+    .input_pc(branch_jump_mux_result),
     .updated_pc(F_PC)
 );
 
@@ -40,12 +40,12 @@ instruction_memory IMEM (
 );
 
 //--Mux for branch/jump--
-wire [31:0] mux_logic;
+wire [31:0] branch_jump_mux_result;
 multiplexer BRANCH_JUMP_MULTIPLEXER(
-    .in_a(E_target_PC), //from pc + imm adder
-    .in_b(F_PC_P4), //from adder of pc + 4 (sel_pc = 1)
+    .in_a(E_target_PC), //sel_pc = 1, jump to target address
+    .in_b(F_PC_P4), //sel_pc = 0
     .sel(sel_pc),
-    .out_m(mux_logic)
+    .out_m(branch_jump_mux_result)
 );
 
 //--PLR1 Register --
@@ -73,7 +73,7 @@ wire [31:0] D_rf_rd2;
 
 register_file RF (
     .clk_r(clk),
-    .reset_r(rst_n),
+    .reset_n(rst_n),
     .a1(D_instr[19:15]),
     .a2(D_instr[24:20]),
     .a3(W_rf_a3), //from the writeback stage
@@ -153,10 +153,11 @@ plr2 PLR2(
     .D_we_rf(D_we_rf),
     .D_rf_rd1(D_rf_rd1),
     .D_rf_rd2(D_rf_rd2),
-    .D_rf_a3(D_instr[11:7]), //Check 
+    .D_rf_a3(D_instr[11:7]),
     .D_ext(D_ext),
     .D_PC(D_PC),
     .D_PC_P4(D_PC_P4),
+    .D_sel_alu_src_a(D_sel_alu_src_a),
     .E_jump(E_jump),
     .E_branch(E_branch),
     .E_sel_result(E_sel_result),
@@ -169,7 +170,8 @@ plr2 PLR2(
     .E_rf_a3(E_rf_a3),
     .E_ext(E_ext),
     .E_PC(E_PC),
-    .E_PC_P4(E_PC_P4)
+    .E_PC_P4(E_PC_P4),
+    .E_sel_alu_src_a(E_alu_src_a) //not in the graph
 );
 
 //-------------------------------------
@@ -192,8 +194,8 @@ adder_general PC_IMM_ADDER(
 wire  [31:0] srcB;
 
 multiplexer SE_RD2_MUX (
-    .in_a(E_ext),
-    .in_b(E_rf_rd2), 
+    .in_a(E_ext), //src_b = 1
+    .in_b(E_rf_rd2), //src_b = 0 
     .sel(E_sel_alu_src_b),
     .out_m(srcB)
 );
@@ -203,8 +205,8 @@ wire [31:0] input_zero = 32'b0;
 wire [31:0] srcA; 
 
 multiplexer ALU_SRCA_MUX(
-    .in_a(input_zero),
-    .in_b(E_rf_rd1),
+    .in_a(input_zero), //src_a = 1, choose for lui
+    .in_b(E_rf_rd1), //src_a = 0
     .sel(E_sel_alu_src_a),
     .out_m(srcA)
 );
@@ -238,6 +240,7 @@ alu ALU(
         .E_dm_wd(E_rf_rd2), //Check diagram again
         .E_rf_a3(E_rf_a3),
         .E_PC_P4(E_PC_P4),
+        .M_sel_result(M_sel_result),
         .M_we_dm(M_we_dm),
         .M_we_rf(M_we_rf),
         .M_alu_o(M_alu_o),
@@ -285,7 +288,6 @@ plr4 PLR4(
     .W_dm_rd(W_dm_rd),
     .W_rf_a3(W_rf_a3),
     .W_PC_P4(W_PC_P4)
-
 );
 
 //-------------------------------------
@@ -295,7 +297,7 @@ plr4 PLR4(
 //--Mux 2 (Writeback multiplexer)--
 wire [31:0] W_result;
 mux_3to1 WRITEBACK_MULTIPLEXER(
-    .in_a(W_alu_o),
+    .in_a(W_alu_o), //
     .in_b(W_dm_rd),
     .in_c(W_PC_P4),
     .sel_res(W_sel_result),

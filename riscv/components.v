@@ -78,7 +78,7 @@ endmodule
 //--------------------------------------------------------------------------------------------
 module register_file(
     input clk_r, 
-    input reset_r,
+    input reset_n,
     input [4:0] a1, //register addresses
     input [4:0] a2, 
     input [4:0] a3, 
@@ -93,8 +93,8 @@ integer i;
 assign rd1 = Registers[a1];
 assign rd2 = Registers[a2];
 
-always @ (posedge clk_r or posedge reset_r) begin
-    if (reset_r) begin
+always @ (posedge clk_r or posedge reset_n) begin
+    if (reset_n) begin
         for (i = 0; i<64; i = i+1) begin
            Registers[i] <= 32'd0; 
         end
