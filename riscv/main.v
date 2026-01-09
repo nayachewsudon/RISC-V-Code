@@ -3,6 +3,7 @@
 `include "signextender.v"
 `include "alu.v"
 `include "pipeline_registers.v"
+`include "hazard_unit.v"
 
 module riscv(
     input clk, 
@@ -20,6 +21,7 @@ programcounter PROGRAMCOUNTER (
     .clk(clk),
     .reset(rst_n),
     .input_pc(branch_jump_mux_result),
+    .F_stall(F_stall), //Addition to handle load hazards
     .updated_pc(F_PC)
 );
 
@@ -58,6 +60,8 @@ plr1 PLR1(
     .F_instr(F_instr),
     .F_PC(F_PC),
     .F_PC_P4(F_PC_P4),
+    .D_flush(D_flush),
+    .D_stall(D_stall),
     .D_instr(D_instr),
     .D_PC(D_PC),
     .D_PC_P4(D_PC_P4)
@@ -76,7 +80,7 @@ register_file RF (
     .reset_n(rst_n),
     .a1(D_instr[19:15]),
     .a2(D_instr[24:20]),
-    .a3(W_rf_a3), //from the writeback stage
+    .a3(W_rf_a3), 
     .wd3(W_result),
     .rd1(D_rf_rd1),
     .rd2(D_rf_rd2),
@@ -92,7 +96,7 @@ wire D_we_rf;
 wire D_branch;             
 wire D_jump;          
 wire [1:0] alu_op;
-wire D_sel_alu_src_a; //Not in the diagram yet
+wire D_sel_alu_src_a; //For LUI
 
 controller_stageone STAGEONE_CONTROLLER(
     .op(D_instr[6:0]),
@@ -137,10 +141,12 @@ signextender SIGNEXTENDER(
     wire E_we_rf;
     wire [31:0] E_rf_rd1; 
     wire [31:0] E_rf_rd2; 
-    wire [11:7] E_rf_a3; 
+    wire [4:0] E_rf_a3; 
     wire [31:0] E_ext; 
     wire [31:0] E_PC; 
     wire [31:0] E_PC_P4;
+    wire [4:0] E_rs1; //Forwarding addition
+    wire [4:0] E_rs2; //Forwarding addition
 
 plr2 PLR2(
     .clk(clk),
@@ -157,7 +163,10 @@ plr2 PLR2(
     .D_ext(D_ext),
     .D_PC(D_PC),
     .D_PC_P4(D_PC_P4),
-    .D_sel_alu_src_a(D_sel_alu_src_a),
+    .D_sel_alu_src_a(D_sel_alu_src_a), //LUI Addition
+    .D_rs1(D_instr[19:15]), //Forwarding addition
+    .D_rs2(D_instr[24:20]), //Forwarding addition
+    .E_flush(E_flush), //Contrl hazard flushing
     .E_jump(E_jump),
     .E_branch(E_branch),
     .E_sel_result(E_sel_result),
@@ -171,7 +180,9 @@ plr2 PLR2(
     .E_ext(E_ext),
     .E_PC(E_PC),
     .E_PC_P4(E_PC_P4),
-    .E_sel_alu_src_a(E_sel_alu_src_a) //not in the graph
+    .E_sel_alu_src_a(E_sel_alu_src_a), //LUI Addition
+    .E_rs1(E_rs1), //Forwarding addition
+    .E_rs2(E_rs2) //Forwarding addition
 );
 
 //-------------------------------------
@@ -181,6 +192,27 @@ plr2 PLR2(
 //--Branch/Jump Logic--
 wire sel_pc;               
 assign sel_pc = (E_branch & E_zero) | E_jump;
+
+//Forward mux A
+wire [31:0] E_forward_result_a; 
+
+mux_3to1 FORWARD_MUX_A (
+    .in_a(E_rf_rd1), //00
+    .in_b(W_result), //01
+    .in_c(M_alu_o), //10
+    .sel_res(E_forward_a),
+    .out_m(E_forward_result_a)
+);
+
+//Forward mux B
+wire [31:0] E_forward_result_b;
+mux_3to1 FORWARD_MUX_B (
+    .in_a(E_rf_rd2), 
+    .in_b(W_result),
+    .in_c(M_alu_o),
+    .sel_res(E_forward_b),
+    .out_m(E_forward_result_b)
+);
 
 //--PC + imm adder--
 wire [31:0] E_target_PC; 
@@ -195,7 +227,7 @@ wire  [31:0] srcB;
 
 multiplexer SE_RD2_MUX (
     .in_a(E_ext), //src_b = 1
-    .in_b(E_rf_rd2), //src_b = 0 
+    .in_b(E_forward_result_b), //src_b = 0 -> from forward mux b
     .sel(E_sel_alu_src_b),
     .out_m(srcB)
 );
@@ -206,7 +238,7 @@ wire [31:0] srcA;
 
 multiplexer ALU_SRCA_MUX(
     .in_a(input_zero), //src_a = 1, choose for lui
-    .in_b(E_rf_rd1), //src_a = 0
+    .in_b(E_forward_result_a), //src_a = 0 -> from forward mux 
     .sel(E_sel_alu_src_a),
     .out_m(srcA)
 );
@@ -304,5 +336,46 @@ mux_3to1 WRITEBACK_MULTIPLEXER(
     .out_m(W_result)
 );
 
+
+//-------------------------------------
+//--Hazard Unit--
+//-------------------------------------
+//Forwarding
+wire E_forward_a; //Control signal for 3to1 mux
+wire E_forward_b; //Contrl signal for 3to1 mux
+
+//Stalling - load hazard
+wire E_flush; 
+wire D_stall; 
+wire F_stall;  
+
+//Control hazard
+wire D_flush;
+
+hazard_unit HAZARDUNIT(
+    //Forwarding ports
+    .E_rs1(E_rs1),
+    .E_rs2(E_rs2),
+    .M_we_rf(M_we_rf),
+    .W_we_rf(W_we_rf),
+    .W_rf_a3(W_rf_a3),
+    .M_rf_a3(M_rf_a3),
+    .E_forward_a(E_forward_a),
+    .E_forward_b(E_forward_b),
+    
+    //Stalling
+    .E_sel_result(E_sel_result),
+    .E_rf_a3(E_rf_a3),
+    .D_rs1(D_instr[19:15]),
+    .D_rs2(D_instr[24:20]),
+    .E_flush(E_flush),
+    .D_stall(D_stall),
+    .F_stall(F_stall),
+
+    //Control hazard handling
+    .sel_pc(sel_pc),
+    .D_flush(D_flush)
+
+);
 
 endmodule

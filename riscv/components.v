@@ -2,15 +2,21 @@ module programcounter (
     input [31:0] input_pc,
     input clk,
     input reset,
+    input F_stall, //Addition for load hazards
     output reg [31:0] updated_pc
 );
     always @ (posedge clk) begin 
      
-        if (reset) begin
-            updated_pc <= 32'b0;//reset value
+        if (F_stall) begin 
+            //Stall - do nothing
         end
-        else begin
-            updated_pc <= input_pc;
+        else begin 
+            if (reset) begin
+                updated_pc <= 32'b0;//reset value
+            end
+            else begin
+                updated_pc <= input_pc;
+            end
         end
     
     end
@@ -60,13 +66,13 @@ module mux_3to1 (
 
 always @(*) begin
     case (sel_res)
-    2'b00: begin //alu
+    2'b00: begin
         out_m <= in_a;
     end
-    2'b01: begin //dm
+    2'b01: begin 
         out_m <= in_b;
     end
-    2'b10: begin //pc+4
+    2'b10: begin
         out_m <= in_c;
     end
     default: begin

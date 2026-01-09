@@ -6,17 +6,21 @@ module hazard_unit (
     input W_we_rf,
     input [11:7] W_rf_a3,
     input [11:7] M_rf_a3,
-    output reg E_forward_a,
-    output reg E_forward_b,
+    output reg E_forward_a, //Forwarding = control signal for 3to1 mux
+    output reg E_forward_b, //Forwarding = control signal for 3to1 mux
 
-    //Stalling
+    //Stalling - load hazard
     input [1:0] E_sel_result, 
     input [11:7] E_rf_a3,
     input [19:15] D_rs1,
     input [24:20] D_rs2,
     output reg E_flush,
     output reg D_stall,
-    output reg F_stall
+    output reg F_stall,
+
+    //Control hazard handling
+    input sel_pc,
+    output reg D_flush
 );
 
 //Forwarding
@@ -46,9 +50,9 @@ end
 
 reg lw_stall = 0;
 
-//Stalling
+//Stalling - load hazard
 always @(*) begin 
-    lw_stall = E_sel_result & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3));
+    lw_stall = E_sel_result & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3)); //Fix
 
     if (lw_stall) begin
         D_stall <= 1; //Stall at decode 
@@ -60,6 +64,13 @@ always @(*) begin
         F_stall <= 0; 
         E_flush <= 0;
     end
+end
+
+//Control hazard handling
+
+always @(*) begin
+    D_flush <= sel_pc; 
+    E_flush <= lw_stall | sel_pc;
 end
 
 endmodule
