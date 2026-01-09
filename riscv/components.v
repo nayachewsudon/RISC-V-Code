@@ -87,15 +87,15 @@ module register_file(
     input we3 //write enable bit
 );
 
-reg [31:0] Registers [63:0]; //the 32 addresses in the register file from x0 to x32
+reg [31:0] Registers [31:0]; //the 32 addresses in the register file from x0 to x32
 integer i; 
 
 assign rd1 = Registers[a1];
 assign rd2 = Registers[a2];
 
-always @ (posedge clk_r or posedge reset_n) begin
-    if (reset_n) begin
-        for (i = 0; i<64; i = i+1) begin
+always @ (posedge clk_r or negedge reset_n) begin
+    if (!reset_n) begin
+        for (i = 0; i<32; i = i+1) begin
            Registers[i] <= 32'd0; 
         end
     end
