@@ -60,8 +60,8 @@ plr1 PLR1(
     .F_instr(F_instr),
     .F_PC(F_PC),
     .F_PC_P4(F_PC_P4),
-    .D_flush(D_flush),
-    .D_stall(D_stall),
+    .D_flush(D_flush), //part of control hazard mechanism
+    .D_stall(D_stall), //part of stalling mechanism
     .D_instr(D_instr),
     .D_PC(D_PC),
     .D_PC_P4(D_PC_P4)
@@ -150,6 +150,8 @@ signextender SIGNEXTENDER(
 
 plr2 PLR2(
     .clk(clk),
+
+    //DECODE
     .D_jump(D_jump),
     .D_branch(D_branch),
     .D_sel_result(D_sel_result),
@@ -166,7 +168,8 @@ plr2 PLR2(
     .D_sel_alu_src_a(D_sel_alu_src_a), //LUI Addition
     .D_rs1(D_instr[19:15]), //Forwarding addition
     .D_rs2(D_instr[24:20]), //Forwarding addition
-    .E_flush(E_flush), //Contrl hazard flushing
+
+    //EXECUTE
     .E_jump(E_jump),
     .E_branch(E_branch),
     .E_sel_result(E_sel_result),
@@ -182,7 +185,10 @@ plr2 PLR2(
     .E_PC_P4(E_PC_P4),
     .E_sel_alu_src_a(E_sel_alu_src_a), //LUI Addition
     .E_rs1(E_rs1), //Forwarding addition
-    .E_rs2(E_rs2) //Forwarding addition
+    .E_rs2(E_rs2), //Forwarding addition
+
+    //Contrl hazard flushing
+    .E_flush(E_flush)
 );
 
 //-------------------------------------
@@ -206,6 +212,7 @@ mux_3to1 FORWARD_MUX_A (
 
 //Forward mux B
 wire [31:0] E_forward_result_b;
+
 mux_3to1 FORWARD_MUX_B (
     .in_a(E_rf_rd2), 
     .in_b(W_result),
@@ -259,7 +266,7 @@ alu ALU(
     wire M_we_dm;
     wire M_we_rf;
     wire [31:0] M_alu_o;
-    wire [11:7] M_rf_a3;
+    wire [4:0] M_rf_a3;
     wire [31:0] M_PC_P4;
     wire [31:0] M_dm_wd;
 
@@ -269,7 +276,7 @@ alu ALU(
         .E_we_dm(E_we_dm),
         .E_we_rf(E_we_rf),
         .E_alu_o(E_alu_o),
-        .E_dm_wd(E_rf_rd2), //Check diagram again
+        .E_dm_wd(E_forward_result_b), //Check diagram again
         .E_rf_a3(E_rf_a3),
         .E_PC_P4(E_PC_P4),
         .M_sel_result(M_sel_result),
@@ -302,13 +309,12 @@ wire [1:0] W_sel_result;
 wire W_we_rf;
 wire [31:0] W_alu_o;
 wire [31:0] W_dm_rd;
-wire [11:7] W_rf_a3; 
+wire [4:0] W_rf_a3; 
 wire [31:0] W_PC_P4;
 
 plr4 PLR4(
     .clk(clk),
     .M_sel_result(M_sel_result),
-    .M_we_dm(M_we_dm),
     .M_we_rf(M_we_rf),
     .M_alu_o(M_alu_o),
     .M_dm_rd(M_dm_rd),
@@ -323,15 +329,15 @@ plr4 PLR4(
 );
 
 //-------------------------------------
-//--STAGE FOUR: MEMORY ACCESS (MA)--
+//--STAGE FIVE: WRITEBACK (WB)--
 //-------------------------------------
 
 //--Mux 2 (Writeback multiplexer)--
 wire [31:0] W_result;
 mux_3to1 WRITEBACK_MULTIPLEXER(
-    .in_a(W_alu_o), //
-    .in_b(W_dm_rd),
-    .in_c(W_PC_P4),
+    .in_a(W_alu_o), //00
+    .in_b(W_dm_rd), //01
+    .in_c(W_PC_P4), //10
     .sel_res(W_sel_result),
     .out_m(W_result)
 );
@@ -341,8 +347,8 @@ mux_3to1 WRITEBACK_MULTIPLEXER(
 //--Hazard Unit--
 //-------------------------------------
 //Forwarding
-wire E_forward_a; //Control signal for 3to1 mux
-wire E_forward_b; //Contrl signal for 3to1 mux
+wire [1:0] E_forward_a; //Control signal for 3to1 mux
+wire [1:0] E_forward_b; //Contrl signal for 3to1 mux
 
 //Stalling - load hazard
 wire E_flush; 

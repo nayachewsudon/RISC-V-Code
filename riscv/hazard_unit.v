@@ -1,19 +1,19 @@
 module hazard_unit (
     //Forwarding
-    input [19:15] E_rs1,
-    input [24:20] E_rs2,
+    input [4:0] E_rs1,
+    input [4:0] E_rs2,
     input M_we_rf,
     input W_we_rf,
-    input [11:7] W_rf_a3,
-    input [11:7] M_rf_a3,
-    output reg E_forward_a, //Forwarding = control signal for 3to1 mux
-    output reg E_forward_b, //Forwarding = control signal for 3to1 mux
+    input [4:0] W_rf_a3,
+    input [4:0] M_rf_a3,
+    output reg [1:0] E_forward_a, //Forwarding = control signal for 3to1 mux
+    output reg [1:0] E_forward_b, //Forwarding = control signal for 3to1 mux
 
     //Stalling - load hazard
     input [1:0] E_sel_result, 
-    input [11:7] E_rf_a3,
-    input [19:15] D_rs1,
-    input [24:20] D_rs2,
+    input [4:0] E_rf_a3,
+    input [4:0] D_rs1,
+    input [4:0] D_rs2,
     output reg E_flush,
     output reg D_stall,
     output reg F_stall,
@@ -52,7 +52,7 @@ reg lw_stall = 0;
 
 //Stalling - load hazard
 always @(*) begin 
-    lw_stall = E_sel_result & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3)); //Fix
+    lw_stall = (E_sel_result == 2'b01) & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3)); //Alternatively, set E_sel_result == 1 and only take the last bit
 
     if (lw_stall) begin
         D_stall <= 1; //Stall at decode 

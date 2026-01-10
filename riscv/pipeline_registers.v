@@ -13,7 +13,7 @@ module plr1(
 
 always @ (posedge clk) begin
     if (D_flush) begin
-        D_instr <= 32'b0; 
+        D_instr <= 32'h00000013; 
         D_PC <= 32'b0; 
         D_PC_P4 <= 32'b0; 
     end 
@@ -115,14 +115,14 @@ module plr3(
     input E_we_rf, 
     input [31:0] E_alu_o, 
     input [31:0] E_dm_wd, 
-    input [11:7] E_rf_a3,
+    input [4:0] E_rf_a3,
     input [31:0] E_PC_P4,
     output reg [1:0] M_sel_result, 
     output reg M_we_dm, 
     output reg M_we_rf, 
     output reg [31:0] M_alu_o,
     output reg [31:0] M_dm_wd,
-    output reg [11:7] M_rf_a3,
+    output reg [4:0] M_rf_a3,
     output reg [31:0] M_PC_P4
 ); 
 
@@ -139,18 +139,17 @@ endmodule
 
 module plr4(
     input clk, 
-    input [1:0] M_sel_result, 
-    input M_we_dm, 
+    input [1:0] M_sel_result,
     input M_we_rf, 
     input [31:0] M_alu_o, 
     input [31:0] M_dm_rd, //connected to data memory 
-    input [11:7] M_rf_a3, 
+    input [4:0] M_rf_a3, 
     input [31:0] M_PC_P4,
     output reg [1:0] W_sel_result,
     output reg W_we_rf, 
     output reg [31:0] W_alu_o, 
     output reg [31:0] W_dm_rd,
-    output reg [11:7] W_rf_a3, 
+    output reg [4:0] W_rf_a3, 
     output reg [31:0] W_PC_P4
 ); 
 

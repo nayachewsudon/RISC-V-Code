@@ -5,18 +5,15 @@ module programcounter (
     input F_stall, //Addition for load hazards
     output reg [31:0] updated_pc
 );
-    always @ (posedge clk) begin 
-     
-        if (F_stall) begin 
-            //Stall - do nothing
+    always @ (posedge clk or negedge reset) begin 
+        if (!reset) begin
+            updated_pc <= 32'b0; 
         end
-        else begin 
-            if (reset) begin
-                updated_pc <= 32'b0;//reset value
-            end
-            else begin
-                updated_pc <= input_pc;
-            end
+        else if (F_stall) begin
+            //Do nothing, pass 
+        end
+        else begin
+            updated_pc <= input_pc;
         end
     
     end
@@ -142,7 +139,12 @@ reg [31:0] Memory [31 : 0];
 integer i;
 assign rd_dm = Memory[a_dm >> 2];
 
-always @ (posedge clk) begin
+always @ (posedge clk or negedge reset) begin
+    if (!reset) begin
+        for (i = 0; i<32; i = i+1) begin
+           Memory[i] <= 32'b0; 
+        end
+    end
     if (we) begin 
         Memory[a_dm [6:2]] = wd_dm; 
     end
