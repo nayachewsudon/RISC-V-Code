@@ -57,6 +57,7 @@ wire [31:0] D_PC_P4;
 
 plr1 PLR1(
     .clk(clk),
+    .rst_n(rst_n),
     .F_instr(F_instr),
     .F_PC(F_PC),
     .F_PC_P4(F_PC_P4),
@@ -70,6 +71,19 @@ plr1 PLR1(
 //-------------------------------------
 //--STAGE TWO: INSTRUCTION DECODE (ID)--
 //-------------------------------------
+
+wire [4:0] D_rs1;
+wire [4:0] D_rs2;
+wire [6:0] D_opcode;
+
+//assign D_opcode = D_instr[6:0];
+//assign D_rs1 = D_instr[19:15];
+
+/*assign D_rs2 =((D_opcode == 7'b0110011) ||  // R-type
+                (D_opcode == 7'b0100011) ||  // S-type  
+                (D_opcode == 7'b1100011))    // B-type
+               ? D_instr[24:20] : 5'b00000;
+*/
 
 //--Register File--
 wire [31:0] D_rf_rd1;
@@ -150,6 +164,7 @@ signextender SIGNEXTENDER(
 
 plr2 PLR2(
     .clk(clk),
+    .rst_n(rst_n),
 
     //DECODE
     .D_jump(D_jump),
@@ -272,6 +287,7 @@ alu ALU(
 
     plr3 PLR3(
         .clk(clk),
+        .rst_n(rst_n),
         .E_sel_result(E_sel_result),
         .E_we_dm(E_we_dm),
         .E_we_rf(E_we_rf),
@@ -314,6 +330,7 @@ wire [31:0] W_PC_P4;
 
 plr4 PLR4(
     .clk(clk),
+    .rst_n(rst_n),
     .M_sel_result(M_sel_result),
     .M_we_rf(M_we_rf),
     .M_alu_o(M_alu_o),

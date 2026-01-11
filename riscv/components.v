@@ -117,11 +117,6 @@ module instruction_memory (
 reg [31:0] RAM [255:0]; // initialize memory storage
 integer i; 
 
-//Initialize memory (to help testing)
-//initial begin
-//    $readmemh("independent.hex", RAM);
-//end
-
 assign rd_im = RAM[a_im[8:2]];
 
 endmodule

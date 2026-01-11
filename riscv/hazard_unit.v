@@ -27,50 +27,46 @@ module hazard_unit (
 always @(*) begin
     //Fwd from memory stage - rs1
     if (((E_rs1 == M_rf_a3) && M_we_rf) && E_rs1 != 0) begin 
-        E_forward_a <= 10;
+        E_forward_a <= 2'b10;
     end
     else if (((E_rs1 == W_rf_a3) && W_we_rf != 0) && E_rs1 != 0) begin
-        E_forward_a <= 01; 
+        E_forward_a <= 2'b01; 
     end
     else begin
-        E_forward_a <= 00; 
+        E_forward_a <= 2'b00; 
     end
 
     //Rs2
     if (((E_rs2 == M_rf_a3) && M_we_rf) && E_rs2 != 0) begin 
-        E_forward_b <= 10;
+        E_forward_b <= 2'b10;
     end
     else if (((E_rs2 == W_rf_a3) && W_we_rf != 0) && E_rs2 != 0) begin
-        E_forward_b <= 01; 
+        E_forward_b <= 2'b01; 
     end
     else begin
-        E_forward_b <= 00; 
+        E_forward_b <= 2'b00; 
     end
 end
 
 reg lw_stall = 0;
 
-//Stalling - load hazard
+always @(*) begin
+    lw_stall = (E_sel_result == 2'b01) & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3)) && (E_rf_a3 != 5'b0); //Alternatively, set E_sel_result == 1 and only take the last bit
+end
+//Stalling and flushing (handles control hazards + load hazards)
 always @(*) begin 
-    lw_stall = (E_sel_result == 2'b01) & ((D_rs1 == E_rf_a3) | (D_rs2 == E_rf_a3)); //Alternatively, set E_sel_result == 1 and only take the last bit
 
     if (lw_stall) begin
-        D_stall <= 1; //Stall at decode 
-        F_stall <= 1; //Stall at fetch
-        E_flush <= 1; //Flush execute stage
+        D_stall <= 1'b1; //Stall at decode 
+        F_stall <= 1'b1; //Stall at fetch
+        E_flush <= 1'b1; //Flush execute stage 
     end
     else begin
-        D_stall <= 0; 
-        F_stall <= 0; 
-        E_flush <= 0;
+        D_stall <= 1'b0; 
+        F_stall <= 1'b0; 
+        E_flush <= sel_pc; //Implement E_flush = lw_stall | sel_pc logic
     end
-end
-
-//Control hazard handling
-
-always @(*) begin
     D_flush <= sel_pc; 
-    E_flush <= lw_stall | sel_pc;
 end
 
 endmodule

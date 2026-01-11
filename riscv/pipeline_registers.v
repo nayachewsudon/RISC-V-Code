@@ -1,6 +1,7 @@
 //--Separates IF and ID--
 module plr1(
     input clk, 
+    input rst_n,
     input [31:0] F_instr, 
     input [31:0] F_PC, 
     input [31:0] F_PC_P4, 
@@ -12,7 +13,12 @@ module plr1(
 ); 
 
 always @ (posedge clk) begin
-    if (D_flush) begin
+    if (!rst_n) begin
+        D_instr <= 32'h00000013;
+        D_PC <= 32'b0;
+        D_PC_P4 <= 32'b0;
+    end
+    else if (D_flush) begin
         D_instr <= 32'h00000013; 
         D_PC <= 32'b0; 
         D_PC_P4 <= 32'b0; 
@@ -31,6 +37,7 @@ endmodule
 //-- Separates ID and EX --
 module plr2(
     input clk, 
+    input rst_n,
     input D_jump, 
     input D_branch, 
     input [1:0] D_sel_result, 
@@ -67,7 +74,25 @@ module plr2(
 ); 
 
 always @ (posedge clk) begin
-    if (E_flush) begin 
+    if (!rst_n) begin
+        E_jump <= 1'b0; 
+        E_branch <= 1'b0; 
+        E_sel_result <= 2'b00; 
+        E_we_dm <= 1'b0; 
+        E_alu_control <= 4'b0000; 
+        E_sel_alu_src_b <= 1'b0; 
+        E_sel_alu_src_a <= 1'b0; 
+        E_we_rf <= 1'b0; 
+        E_rf_rd1 <= 32'b0; 
+        E_rf_rd2 <= 32'b0; 
+        E_rf_a3 <= 5'b0; 
+        E_ext <= 32'b0; 
+        E_PC <= 32'b0; 
+        E_PC_P4 <= 32'b0; 
+        E_rs1 <= 5'b0; 
+        E_rs2 <= 5'b0;
+    end
+    else if (E_flush) begin 
         E_jump <= 1'b0; 
         E_branch <= 1'b0; 
         E_sel_result <= 2'b00; 
@@ -110,6 +135,7 @@ endmodule
 
 module plr3(
     input clk, 
+    input rst_n,
     input [1:0] E_sel_result,
     input E_we_dm,
     input E_we_rf, 
@@ -127,18 +153,30 @@ module plr3(
 ); 
 
 always @ (posedge clk) begin
-    M_sel_result <= E_sel_result;    
-    M_we_dm <= E_we_dm;
-    M_we_rf <= E_we_rf; 
-    M_alu_o <= E_alu_o; 
-    M_dm_wd <= E_dm_wd; 
-    M_rf_a3 <= E_rf_a3; 
-    M_PC_P4 <= E_PC_P4;
+    if (!rst_n) begin
+        M_sel_result <= 2'b0;    
+        M_we_dm <= 1'b0;
+        M_we_rf <= 1'b0; 
+        M_alu_o <= 32'b0; 
+        M_dm_wd <= 32'b0; 
+        M_rf_a3 <= 5'b0; 
+        M_PC_P4 <= 32'b0;    
+    end
+    else begin
+        M_sel_result <= E_sel_result;    
+        M_we_dm <= E_we_dm;
+        M_we_rf <= E_we_rf; 
+        M_alu_o <= E_alu_o; 
+        M_dm_wd <= E_dm_wd; 
+        M_rf_a3 <= E_rf_a3; 
+        M_PC_P4 <= E_PC_P4;
+    end
 end
 endmodule 
 
 module plr4(
     input clk, 
+    input rst_n,
     input [1:0] M_sel_result,
     input M_we_rf, 
     input [31:0] M_alu_o, 
@@ -154,11 +192,21 @@ module plr4(
 ); 
 
 always @ (posedge clk) begin
-    W_sel_result <= M_sel_result; 
-    W_we_rf <= M_we_rf; 
-    W_alu_o <= M_alu_o; 
-    W_dm_rd <= M_dm_rd; 
-    W_rf_a3 <= M_rf_a3; 
-    W_PC_P4 <= M_PC_P4; 
+    if (!rst_n) begin
+        W_sel_result <= 2'b0; 
+        W_we_rf <= 1'b0; 
+        W_alu_o <= 32'b0; 
+        W_dm_rd <= 32'b0; 
+        W_rf_a3 <= 5'b0; 
+        W_PC_P4 <= 32'b0; 
+    end
+    else begin
+        W_sel_result <= M_sel_result; 
+        W_we_rf <= M_we_rf; 
+        W_alu_o <= M_alu_o; 
+        W_dm_rd <= M_dm_rd; 
+        W_rf_a3 <= M_rf_a3; 
+        W_PC_P4 <= M_PC_P4;  
+    end
 end
 endmodule
