@@ -1,12 +1,17 @@
 module alu(
     input [31:0] a, b,
     input [3:0] alu_controller, 
+    input lui,
     output reg [31:0] rd,
     output zero_flag
 );
 
 always @(*) begin
-    case(alu_controller)
+    if (lui) begin
+        rd = b;
+    end
+    else begin
+       case(alu_controller)
         4'b0000: //add
         begin 
             rd = a + b;
@@ -48,7 +53,8 @@ always @(*) begin
             rd = a & b;
         end
         default: rd = 32'bx;
-    endcase
+    endcase 
+    end
 end
 
 //Noww we raise the zero flag if a == b

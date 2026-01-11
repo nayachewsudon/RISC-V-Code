@@ -8,7 +8,7 @@ module controller_stageone(
     output reg branch, 
     output reg sel_jump,
     output reg [1:0] alu_op,
-    output reg sel_alu_src_a
+    output reg lui
 ); 
 
 always @ (*) begin
@@ -22,7 +22,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;
         alu_op = 2'b00;
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     7'b0100011: begin //sw
         rf_we = 1'b0;
@@ -33,7 +33,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;
         alu_op = 2'b00;
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     7'b0110011: begin //R-Type
         rf_we = 1'b1;
@@ -44,7 +44,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;
         alu_op = 2'b01;
-        sel_alu_src_a = 1'b0;
+        lui = 1'b0;
     end
     7'b0010011: begin
         rf_we = 1'b1;
@@ -55,7 +55,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;
         alu_op = 2'b10;
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     7'b1100011: begin //beq
         rf_we = 1'b0;
@@ -66,7 +66,7 @@ always @ (*) begin
         branch = 1;
         sel_jump = 0;
         alu_op = 2'b11;
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     7'b0110111: begin //lui
         rf_we = 1'b1;
@@ -77,7 +77,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;         
         alu_op = 2'b00; 
-        sel_alu_src_a = 1'b1;
+        lui = 1'b1;
     end
     7'b1101111: begin //jal
         rf_we = 1'b1;
@@ -88,7 +88,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 1;       
         alu_op = 2'bxx;
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     default: begin
         rf_we = 1'b0;
@@ -99,7 +99,7 @@ always @ (*) begin
         branch = 0;
         sel_jump = 0;
         alu_op = 2'b00; 
-        sel_alu_src_a = 1'b0; 
+        lui = 1'b0; 
     end
     endcase
 end

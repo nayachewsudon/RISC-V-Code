@@ -93,8 +93,8 @@ module register_file(
 reg [31:0] Registers [31:0]; //the 32 addresses in the register file from x0 to x32
 integer i; 
 
-assign rd1 = Registers[a1];
-assign rd2 = Registers[a2];
+assign rd1 = (a1 == a3 && we3) ? wd3 : Registers[a1];
+assign rd2 = (a2 == a3 && we3) ? wd3 : Registers[a2];
 
 always @ (posedge clk_r or negedge reset_n) begin
     if (!reset_n) begin

@@ -72,19 +72,6 @@ plr1 PLR1(
 //--STAGE TWO: INSTRUCTION DECODE (ID)--
 //-------------------------------------
 
-wire [4:0] D_rs1;
-wire [4:0] D_rs2;
-wire [6:0] D_opcode;
-
-//assign D_opcode = D_instr[6:0];
-//assign D_rs1 = D_instr[19:15];
-
-/*assign D_rs2 =((D_opcode == 7'b0110011) ||  // R-type
-                (D_opcode == 7'b0100011) ||  // S-type  
-                (D_opcode == 7'b1100011))    // B-type
-               ? D_instr[24:20] : 5'b00000;
-*/
-
 //--Register File--
 wire [31:0] D_rf_rd1;
 wire [31:0] D_rf_rd2;
@@ -110,7 +97,7 @@ wire D_we_rf;
 wire D_branch;             
 wire D_jump;          
 wire [1:0] alu_op;
-wire D_sel_alu_src_a; //For LUI
+wire D_lui; //For LUI
 
 controller_stageone STAGEONE_CONTROLLER(
     .op(D_instr[6:0]),
@@ -122,7 +109,7 @@ controller_stageone STAGEONE_CONTROLLER(
     .branch(D_branch),        
     .sel_jump(D_jump),
     .alu_op(alu_op),
-    .sel_alu_src_a(D_sel_alu_src_a)
+    .lui(D_lui)
 );
 
 //--Controller stage 2--
@@ -151,7 +138,7 @@ signextender SIGNEXTENDER(
     wire E_we_dm;
     wire [3:0] E_alu_control; 
     wire E_sel_alu_src_b;
-    wire E_sel_alu_src_a; 
+    wire E_lui; //For LUI 
     wire E_we_rf;
     wire [31:0] E_rf_rd1; 
     wire [31:0] E_rf_rd2; 
@@ -161,6 +148,11 @@ signextender SIGNEXTENDER(
     wire [31:0] E_PC_P4;
     wire [4:0] E_rs1; //Forwarding addition
     wire [4:0] E_rs2; //Forwarding addition
+
+    wire [4:0] D_rs1; 
+    assign D_rs1 = D_instr[19:15];
+    wire [4:0] D_rs2;
+    assign D_rs2 = D_instr[24:20];
 
 plr2 PLR2(
     .clk(clk),
@@ -180,9 +172,9 @@ plr2 PLR2(
     .D_ext(D_ext),
     .D_PC(D_PC),
     .D_PC_P4(D_PC_P4),
-    .D_sel_alu_src_a(D_sel_alu_src_a), //LUI Addition
-    .D_rs1(D_instr[19:15]), //Forwarding addition
-    .D_rs2(D_instr[24:20]), //Forwarding addition
+    .D_lui(D_lui), //LUI Addition
+    .D_rs1(D_rs1), //Forwarding addition
+    .D_rs2(D_rs2), //Forwarding addition
 
     //EXECUTE
     .E_jump(E_jump),
@@ -198,7 +190,7 @@ plr2 PLR2(
     .E_ext(E_ext),
     .E_PC(E_PC),
     .E_PC_P4(E_PC_P4),
-    .E_sel_alu_src_a(E_sel_alu_src_a), //LUI Addition
+    .E_lui(E_lui), //LUI Addition
     .E_rs1(E_rs1), //Forwarding addition
     .E_rs2(E_rs2), //Forwarding addition
 
@@ -216,7 +208,6 @@ assign sel_pc = (E_branch & E_zero) | E_jump;
 
 //Forward mux A
 wire [31:0] E_forward_result_a; 
-
 mux_3to1 FORWARD_MUX_A (
     .in_a(E_rf_rd1), //00
     .in_b(W_result), //01
@@ -227,7 +218,6 @@ mux_3to1 FORWARD_MUX_A (
 
 //Forward mux B
 wire [31:0] E_forward_result_b;
-
 mux_3to1 FORWARD_MUX_B (
     .in_a(E_rf_rd2), 
     .in_b(W_result),
@@ -254,24 +244,14 @@ multiplexer SE_RD2_MUX (
     .out_m(srcB)
 );
 
-//--SrcA Mux (NOT IN GRAPH)--
-wire [31:0] input_zero = 32'b0;
-wire [31:0] srcA; 
-
-multiplexer ALU_SRCA_MUX(
-    .in_a(input_zero), //src_a = 1, choose for lui
-    .in_b(E_forward_result_a), //src_a = 0 -> from forward mux 
-    .sel(E_sel_alu_src_a),
-    .out_m(srcA)
-);
-
 //--ALU--
 wire [31:0] E_alu_o;
 wire E_zero; 
 alu ALU(
-    .a(srcA),
+    .a(E_forward_result_a),
     .b(srcB),
     .alu_controller(E_alu_control),
+    .lui(E_lui),
     .rd(E_alu_o),
     .zero_flag(E_zero)
 );
@@ -389,8 +369,8 @@ hazard_unit HAZARDUNIT(
     //Stalling
     .E_sel_result(E_sel_result),
     .E_rf_a3(E_rf_a3),
-    .D_rs1(D_instr[19:15]),
-    .D_rs2(D_instr[24:20]),
+    .D_rs1(D_rs1),
+    .D_rs2(D_rs2),
     .E_flush(E_flush),
     .D_stall(D_stall),
     .F_stall(F_stall),

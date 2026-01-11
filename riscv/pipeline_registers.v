@@ -51,7 +51,7 @@ module plr2(
     input [31:0] D_ext, 
     input [31:0] D_PC,
     input [31:0] D_PC_P4,
-    input D_sel_alu_src_a, //Addition for LUI
+    input D_lui, //Addition for LUI
     input [4:0] D_rs1, //Forwarding addition
     input [4:0] D_rs2, //Forwarding addition
     input E_flush, //Control hazard flushing
@@ -68,7 +68,7 @@ module plr2(
     output reg [31:0] E_ext, 
     output reg [31:0] E_PC, 
     output reg [31:0] E_PC_P4,
-    output reg E_sel_alu_src_a, //Addition for LUI
+    output reg E_lui, //Addition for LUI
     output reg [4:0] E_rs1, //Forwarding addition 
     output reg [4:0] E_rs2 // Forwarding addition
 ); 
@@ -81,7 +81,7 @@ always @ (posedge clk) begin
         E_we_dm <= 1'b0; 
         E_alu_control <= 4'b0000; 
         E_sel_alu_src_b <= 1'b0; 
-        E_sel_alu_src_a <= 1'b0; 
+        E_lui <= 1'b0; 
         E_we_rf <= 1'b0; 
         E_rf_rd1 <= 32'b0; 
         E_rf_rd2 <= 32'b0; 
@@ -99,7 +99,7 @@ always @ (posedge clk) begin
         E_we_dm <= 1'b0; 
         E_alu_control <= 4'b0000; 
         E_sel_alu_src_b <= 1'b0; 
-        E_sel_alu_src_a <= 1'b0; 
+        E_lui <= 1'b0; 
         E_we_rf <= 1'b0; 
         E_rf_rd1 <= 32'b0; 
         E_rf_rd2 <= 32'b0; 
@@ -125,7 +125,7 @@ always @ (posedge clk) begin
         E_ext <= D_ext; 
         E_PC <= D_PC; 
         E_PC_P4 <= D_PC_P4;
-        E_sel_alu_src_a <= D_sel_alu_src_a; 
+        E_lui <= D_lui; 
         E_rs1 <= D_rs1; 
         E_rs2 <= D_rs2; 
     end
