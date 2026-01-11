@@ -5,13 +5,13 @@ module testbench;
 
 reg clk;
 reg reset;
-reg [31:0] x22_after_add; 
-reg [31:0] x22_after_addi;
-reg [31:0] x22_after_lui;
-reg [31:0] x23_after_sub; 
-reg [31:0] x24_after_sltu;
-reg [31:0] x17_after_first_jal;
-reg [31:0] x1_after_first_lui;
+reg [31:0] x1_after_first_lui   = 32'h0;
+reg [31:0] x17_after_first_jal  = 32'h0;
+reg [31:0] x22_after_add        = 32'h0;
+reg [31:0] x22_after_lui        = 32'h0;
+reg [31:0] x22_after_addi       = 32'h0;
+reg [31:0] x23_after_sub        = 32'h0;
+reg [31:0] x24_after_sltu       = 32'h0;
 
 riscv riscv_inst (
     .clk(clk),
@@ -30,35 +30,30 @@ reg x24_captured = 0;
 integer x22_writes = 2'd0; 
 
 always @(posedge clk) begin
-    if (!reset) begin
-        if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd1 && !x1_captured) begin
-            x1_after_first_lui <= riscv_inst.RF.Registers[1];
-            x1_captured <= 1;
-        end
-        
-        if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd17 && !x17_captured) begin
-            x17_after_first_jal <= riscv_inst.RF.Registers[17];
-            x17_captured <= 1;
-        end
-        if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd23 && !x23_captured) begin
-            x23_after_sub <= riscv_inst.RF.Registers[23];
-            x23_captured <= 1;
-        end
-        
-        if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd24 && !x24_captured) begin
-            x24_after_sltu <= riscv_inst.RF.Registers[24];
-            x24_captured <= 1;
-        end
-        
-        if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd22) begin
-            case (x22_writes)
-                0: x22_after_add  <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
-                1: x22_after_lui  <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
-                2: x22_after_addi <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
-            endcase
-            x22_writes <= x22_writes + 2'd1;
-        end
-        
+    if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd1 && !x1_captured) begin
+        x1_after_first_lui <= riscv_inst.RF.Registers[1];
+        x1_captured <= 1;
+    end
+    if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd17 && !x17_captured) begin
+        x17_after_first_jal <= riscv_inst.RF.Registers[17];
+        x17_captured <= 1;
+    end
+    if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd23 && !x23_captured) begin
+        x23_after_sub <= riscv_inst.RF.Registers[23];
+        x23_captured <= 1;
+    end
+    if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd24 && !x24_captured) begin
+        x24_after_sltu <= riscv_inst.RF.Registers[24];
+        x24_captured <= 1;
+    end
+
+    if (riscv_inst.PLR4.W_we_rf && riscv_inst.PLR4.W_rf_a3 == 5'd22) begin
+        case (x22_writes)
+            0: x22_after_add  <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
+            1: x22_after_lui  <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
+            2: x22_after_addi <= riscv_inst.WRITEBACK_MULTIPLEXER.out_m;
+        endcase
+        x22_writes <= x22_writes + 2'd1;
     end
 end
 
@@ -73,7 +68,7 @@ end
 
 // Waveform dump
 initial begin
-    $dumpfile("riscv_test.vcd");
+    $dumpfile("main_test.vcd");
     $dumpvars(0, testbench);
     
     // Reset sequence
@@ -152,7 +147,7 @@ end
 initial begin
     $monitor("PC=%h, sel_pc=%b, branch=%b, zero_flag=%b, sel_jump=%b, pc_p_imm=%h, pc_p4=%h, se_out=%h, sel_alu_src_a = %b, sel_alu_src_b = %b, SE_RD_MUX.out = %h", 
           riscv_inst.PROGRAMCOUNTER.updated_pc, riscv_inst.BRANCH_JUMP_MULTIPLEXER.sel, riscv_inst.STAGEONE_CONTROLLER.branch, riscv_inst.ALU.zero_flag, 
-          riscv_inst.STAGEONE_CONTROLLER.sel_jump, riscv_inst.PC_IMM_ADDER.sum, riscv_inst.ADDER.pc_plus_4, riscv_inst.SIGNEXTENDER.out, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_a, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_b, 
+          riscv_inst.STAGEONE_CONTROLLER.sel_jump, riscv_inst.PC_IMM_ADDER.sum, riscv_inst.ADDER.pc_plus_4, riscv_inst.SIGNEXTENDER.out, riscv_inst.STAGEONE_CONTROLLER.lui, riscv_inst.STAGEONE_CONTROLLER.sel_alu_src_b, 
           riscv_inst.SE_RD2_MUX.out_m);
 end
 
