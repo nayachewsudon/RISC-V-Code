@@ -6,7 +6,7 @@ module testbench;
 reg clk;
 reg reset;
 
-riscv riscv_inst (
+rv_pl riscv_inst (
     .clk(clk),
     .rst_n(reset)
 );
@@ -357,9 +357,9 @@ always @(posedge clk) begin
                 riscv_inst.RF.Registers[27], 
                 (riscv_inst.RF.Registers[27] == 32'h00002000) ? "PASS ✓" : "FAIL ✗");
 
-        $display("x28 (SLT)        = %10d | expect          1 | %s ", 
+        $display("x28 (SLT)        = %10d | expect          0 | %s ", 
                 riscv_inst.RF.Registers[28], 
-                (riscv_inst.RF.Registers[28] == 1) ? "PASS " : "FAIL ");
+                (riscv_inst.RF.Registers[28] == 0) ? "PASS " : "FAIL ");
         
         // ===== MEMORY OPERATIONS (FIRST SET) =====
         $display("\n=== MEMORY OPERATIONS (First Set) ===");

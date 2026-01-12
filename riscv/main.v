@@ -5,7 +5,7 @@
 `include "pipeline_registers.v"
 `include "hazard_unit.v"
 
-module riscv(
+module rv_pl(
     input clk, 
     input rst_n
 );
