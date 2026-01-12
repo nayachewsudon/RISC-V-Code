@@ -109,12 +109,12 @@ end
 
 endmodule
 //--------------------------------------------------------------------------------------------
-module instruction_memory ( 
+module instruction_memory #(parameter MEMDEPTH = 256) ( 
     input [31:0] a_im, 
     output [31:0] rd_im
 );
 
-reg [31:0] RAM [255:0]; // initialize memory storage
+reg [31:0] RAM [MEMDEPTH - 1:0]; // initialize memory storage
 integer i; 
 
 assign rd_im = RAM[a_im[8:2]];
@@ -122,7 +122,7 @@ assign rd_im = RAM[a_im[8:2]];
 endmodule
 
 //--------------------------------------------------------------------------------------------
-module data_memory( 
+module data_memory # (parameter MEMDEPTH = 256) ( 
     input [31:0] a_dm, //read instruction
     input clk, reset,
     input [31:0] wd_dm, //data to write
@@ -130,18 +130,18 @@ module data_memory(
     output [31:0] rd_dm 
 );
 
-reg [31:0] Memory [31 : 0];
+reg [31:0] Memory [MEMDEPTH-1 : 0];
 integer i;
-assign rd_dm = Memory[a_dm >> 2];
+assign rd_dm = Memory[a_dm [8:2]];
 
 always @ (posedge clk or negedge reset) begin
     if (!reset) begin
-        for (i = 0; i<32; i = i+1) begin
+        for (i = 0; i<MEMDEPTH; i = i+1) begin
            Memory[i] <= 32'b0; 
         end
     end
     if (we) begin 
-        Memory[a_dm [6:2]] = wd_dm; 
+        Memory[a_dm [8:2]] = wd_dm; 
     end
 end
 
