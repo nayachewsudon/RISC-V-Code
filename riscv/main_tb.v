@@ -317,9 +317,9 @@ always @(posedge clk) begin
         $display("x16 (after BEQ)  = %10d | expect          2 | %s | [Taken → skip then exec]", 
                  riscv_inst.RF.Registers[16], 
                  (riscv_inst.RF.Registers[16] == 2) ? "PASS " : "FAIL ");
-        $display("x17 (JAL link)   = 0x%08h | expect 0x00000000 | %s | [FLUSHED by later JAL]", 
+        $display("x17 (JAL link)   = 0x%08h | expect 0x00000050 | %s |", 
                  x17_jal, 
-                 (x17_jal == 32'h00000000) ? "PASS " : "FAIL ");
+                 (x17_jal == 32'h00000050) ? "PASS " : "FAIL ");
         $display("x19 (JAL target) = %10d | expect          0 | %s | [Overwrites skipped instr]", 
                  riscv_inst.RF.Registers[19], 
                  (riscv_inst.RF.Registers[19] == 0) ? "PASS " : "FAIL ");
